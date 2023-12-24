@@ -45,6 +45,8 @@ void Config::parse_server(std::ifstream& file){
         else
             parse_line(tmp, file, server);
     }
+    if (tmp.empty())
+        cerrAndExit("ERROR: config file can't be empty!", 1);
     check_server(server);    
     servers.push_back(server);    
 }
