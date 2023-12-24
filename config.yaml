@@ -11,7 +11,7 @@ server:
       allow_methods:
         - GET
       root: ./root/
-      autoindex: on
+      autoindex: off
       index:
         - test
         - nigga

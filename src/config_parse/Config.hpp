@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../webserv.hpp"
+#include "../../webserv.hpp"
 
 
 typedef struct s_location {
@@ -18,7 +18,7 @@ typedef struct s_server {
     int                                 port;    
     std::string                         ip;
     std::string                         server_name;
-    std::string                         max_body_size;
+    size_t                              max_body_size;
     std::vector<t_location>             locations;
     std::map<std::string, std::string>  error_pages;
 } t_server;
@@ -37,6 +37,9 @@ class Config{
     void parse_index(std::string& line, std::ifstream& file, t_location& location);
     void parse_methods(std::string* str, std::ifstream& file, t_location& location);
     void parse_cgi(std::string *str, std::ifstream& file, t_location& location);
+    void parse_body_size(std::string& str, std::string& line, t_server& server);
+    void check_server(t_server& server);
+    void check_location(t_location& location);
     public:
         Config(std::string config_file);
         std::vector<t_server> servers;

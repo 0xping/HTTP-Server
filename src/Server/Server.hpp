@@ -20,7 +20,7 @@
 #include <cerrno>
 #include <unistd.h>
 #include <fcntl.h>
-#include "../Config/Config.hpp"
+#include "../config_parse/Config.hpp"
 
 
 // Server.hpp

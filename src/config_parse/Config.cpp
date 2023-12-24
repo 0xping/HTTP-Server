@@ -35,7 +35,8 @@ void Config::parse_server(std::ifstream& file){
         }   
         if (!s && tmp == "server:")
             s = 1;
-        else if (s && tmp == "server:"){
+        else if (s && tmp == "server:"){            
+            check_server(server);
             servers.push_back(server);
             file.seekg(-tmp.length()-1, std::ios_base::cur);
             parse_server(file);
@@ -44,7 +45,15 @@ void Config::parse_server(std::ifstream& file){
         else
             parse_line(tmp, file, server);
     }
-    servers.push_back(server);
+    check_server(server);    
+    servers.push_back(server);    
+}
+
+void Config::check_server(t_server& server){
+    if (server.ip.empty())
+        cerrAndExit("ERROR: server has to have a listen field!", 1);
+    if (server.locations.empty())
+        cerrAndExit("ERROR: server has to have at least one location!", 1);
 }
 
 void Config::check_leading_spaces(std::string& str, int n){
@@ -112,7 +121,7 @@ void Config::parse_line(std::string& line, std::ifstream& file, t_server& server
     if (splited[0] == "listen")
         parse_ip(splited[1], line, server);
     else if (splited[0] == "max_client_body_size")
-        parse_in_line(splited[1], line, server.max_body_size);
+        parse_body_size(splited[1], line, server);
     else if (splited[0] == "server_name")
         parse_in_line(splited[1], line, server.server_name);
     else if (splited[0] == "error_page")
@@ -132,6 +141,17 @@ void Config::parse_line(std::string& line, std::ifstream& file, t_server& server
     else
         cerrAndExit("ERROR: Invalid directive found -> " + splited[0], 1);
     delete[] splited;
+}
+
+void Config::parse_body_size(std::string& str, std::string& line, t_server& server){
+    std::string tmp;
+
+
+    parse_in_line(str, line, tmp);
+    if (!isAlldigit(tmp))
+        cerrAndExit("ERROR: Invalid max body size!", 1);
+    std::stringstream size(tmp);
+    size >> server.max_body_size;
 }
 
 void Config::parse_methods(std::string* str, std::ifstream& file, t_location& location){
@@ -182,6 +202,7 @@ void Config::parse_location(std::string& line, std::ifstream& file, t_server& se
             break;
         }
         if (i == 4){
+            check_location(location);
             server.locations.push_back(location);
             parse_location(line, file, server);
             return ;
@@ -206,8 +227,16 @@ void Config::parse_location(std::string& line, std::ifstream& file, t_server& se
         else
             cerrAndExit("ERROR: Invalid directive found in locations!", 1);
         delete[] splited;
-    }           
+    }          
+    check_location(location); 
     server.locations.push_back(location);
+}
+
+void Config::check_location(t_location& location){
+    if (!location.autoindex && location.index.empty())
+        cerrAndExit("ERROR: autoindex for " + location.path + " is off and no index was provided!", 1);
+    if (location.root.empty())
+        cerrAndExit("ERROR: root wasn't provided for " + location.path + "!", 1);
 }
 
 void Config::parse_cgi(std::string* str, std::ifstream& file, t_location& location){

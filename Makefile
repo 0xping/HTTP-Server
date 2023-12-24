@@ -1,6 +1,6 @@
 CPP=c++
 CPPFLAGS=-Wall -Wextra -Werror -std=c++98 -fsanitize=address
-SRC=main.cpp config_parse/Config.cpp utils/utils.cpp
+SRC=main.cpp src/config_parse/Config.cpp src/utils/utils.cpp
 OBJ=$(SRC:.cpp=.o)
 NAME=webserv
 

@@ -11,7 +11,7 @@
 #include <cctype>
 #include <unistd.h>
 
-#include "config_parse/Config.hpp"
+#include "src/config_parse/Config.hpp"
 
 class Config;
 
