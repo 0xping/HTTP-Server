@@ -1,0 +1,15 @@
+#pragma once
+
+#include "../../webserv.hpp" 
+
+class t_location {
+    public:
+        std::string              path;
+        std::string              root;
+        std::string              _return;
+        std::string              upload_path;
+        std::vector<std::string> index;
+        std::vector<std::string> allow_methods;    
+        std::map<std::string, std::string> cgi_path;
+        bool                     autoindex;
+};

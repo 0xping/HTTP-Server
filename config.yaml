@@ -4,6 +4,7 @@ server:
   error_page:
     - 400: main_errors/error400.html
     - 404: main_errors/error404.html
+    - 405: main_errors/error404.html
   server_name: example1.com
 
   location:

@@ -1,28 +1,8 @@
 #pragma once
 
 #include "../../webserv.hpp"
-
-
-typedef struct s_location {
-    std::string              path;
-    std::string              root;
-    std::string              _return;
-    std::string              upload_path;
-    std::vector<std::string> index;
-    std::vector<std::string> allow_methods;    
-    std::map<std::string, std::string> cgi_path;
-    bool                     autoindex;
-} t_location;
-
-typedef struct s_server {
-    int                                 port;    
-    std::string                         ip;
-    std::string                         server_name;
-    size_t                              max_body_size;
-    std::vector<t_location>             locations;
-    std::map<std::string, std::string>  error_pages;
-} t_server;
-
+#include "T_srver.hpp"
+#include "T_location.hpp"
 
 class Config{         
     void parse_config(std::string config_file);
@@ -39,7 +19,7 @@ class Config{
     void parse_cgi(std::string *str, std::ifstream& file, t_location& location);
     void parse_body_size(std::string& str, std::string& line, t_server& server);
     void check_server(t_server& server);
-    void check_location(t_location& location);
+    void check_location(t_location& location, t_server& server);
     public:
         Config(std::string config_file);
         std::vector<t_server> servers;

@@ -146,13 +146,12 @@ void Config::parse_line(std::string& line, std::ifstream& file, t_server& server
 }
 
 void Config::parse_body_size(std::string& str, std::string& line, t_server& server){
-    std::string tmp;
-
-
-    parse_in_line(str, line, tmp);
-    if (!isAlldigit(tmp))
+    if (!server.body_size.empty())
+        cerrAndExit("ERROR: Found duplicate max_client_body_size directive!", 1);
+    parse_in_line(str, line, server.body_size);
+    if (!isAlldigit(server.body_size))
         cerrAndExit("ERROR: Invalid max body size!", 1);
-    std::stringstream size(tmp);
+    std::stringstream size(server.body_size);
     size >> server.max_body_size;
 }
 
@@ -175,7 +174,12 @@ void Config::parse_methods(std::string* str, std::ifstream& file, t_location& lo
         trim_spaces(line, 1);
         if (strncmp(line.c_str(), "- ", 2))
             cerrAndExit("ERROR: list elements must start with '- '!\n-> " + line, 1);
-        location.allow_methods.push_back(std::string(&line[2]));
+        std::string method(&line[2]);
+        if (method != "GET" && method != "POST" && method != "DELETE")
+            cerrAndExit("ERROR: found invalid method!\n-> " + method, 1);
+        if (std::find(location.allow_methods.begin(), location.allow_methods.end(), method) != location.allow_methods.end())
+            cerrAndExit("ERROR: found duplicate methods in " + location.path, 1);
+        location.allow_methods.push_back(method);
     }
 }
 
@@ -204,8 +208,8 @@ void Config::parse_location(std::string& line, std::ifstream& file, t_server& se
             break;
         }
         if (i == 4){
-            check_location(location);
-            server.locations.push_back(location);
+            check_location(location, server);
+            server.locations[location.path]=location;
             parse_location(line, file, server);
             return ;
         }
@@ -230,15 +234,17 @@ void Config::parse_location(std::string& line, std::ifstream& file, t_server& se
             cerrAndExit("ERROR: Invalid directive found in locations!", 1);
         delete[] splited;
     }          
-    check_location(location); 
-    server.locations.push_back(location);
+    check_location(location, server); 
+    server.locations[location.path]= location;
 }
 
-void Config::check_location(t_location& location){
+void Config::check_location(t_location& location, t_server& server){
     if (!location.autoindex && location.index.empty())
         cerrAndExit("ERROR: autoindex for " + location.path + " is off and no index was provided!", 1);
     if (location.root.empty())
         cerrAndExit("ERROR: root wasn't provided for " + location.path + "!", 1);
+    if (server.locations.find(location.path) != server.locations.end())
+        cerrAndExit("ERROR: found duplicate path in locations!\n-> " + location.path, 1);
 }
 
 void Config::parse_cgi(std::string* str, std::ifstream& file, t_location& location){
@@ -264,6 +270,8 @@ void Config::parse_cgi(std::string* str, std::ifstream& file, t_location& locati
         splited = split(&line[2], ':');
         checkTrailingSpaces(splited[1], line);
         trim_spaces(splited[1], 1);
+        if (location.cgi_path.find(splited[0]) != location.cgi_path.end())
+            cerrAndExit("ERROR: found duplicate cgi path " + splited[0] + "in " + location.path, 1);
         location.cgi_path[splited[0]] = splited[1];
         delete[] splited;
     }
@@ -295,6 +303,9 @@ void Config::parse_index(std::string& line, std::ifstream& file, t_location& loc
             trim_spaces(line, 1);
             if (strncmp("- ", line.c_str(), 2))
                 cerrAndExit("ERROR: list elements have to start with '- '!", 1);
+            std::string index(&line[2]);
+            if (std::find(location.index.begin(), location.index.end(), index) != location.index.end())
+                cerrAndExit("ERROR: found duplicate index in " + location.path, 1);
             location.index.push_back(std::string(&line[2]));
         }
     }
@@ -324,6 +335,8 @@ void Config::parse_error_pages(std::string& line, std::string _2ndfield, std::if
         splitted = split(&tmp[1], ':');
         trim_spaces(splitted[0], 1);
         trim_spaces(splitted[1], 1);
+        if (server.error_pages.find(splitted[0]) != server.error_pages.end())
+            cerrAndExit("ERROR: found duplicate error page: -> " + tmp, 1);
         server.error_pages[splitted[0]] = splitted[1];
         delete[] splitted;
     }
