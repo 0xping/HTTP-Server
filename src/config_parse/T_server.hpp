@@ -13,5 +13,7 @@ class t_server {
         std::map<std::string, t_location>   locations;
         std::map<std::string, std::string>  error_pages;
 
-        std::string& getErrorPage(std::string& errn_);
+        std::string getErrorPage(std::string& errn_);
+        bool hasLocation(std::string& location);
+        t_location& getLocation(std::string& location);
 };

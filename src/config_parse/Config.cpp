@@ -6,7 +6,7 @@ Config::Config(std::string config_file){
 
 void Config::parse_config(std::string config_file){
     int len;
-    std::ifstream file;
+    std::ifstream file; 
 
     len = config_file.length();
     if (len >= 5 && config_file[0] != '.' && (!strcmp(&config_file[len - 5], ".yaml") || !strcmp(&config_file[len - 4], ".yml")))

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../../webserv.hpp"
-#include "T_srver.hpp"
+#include "T_server.hpp"
 #include "T_location.hpp"
 
 class Config{         
