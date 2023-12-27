@@ -20,34 +20,37 @@
 #include <cerrno>
 #include <unistd.h>
 #include <fcntl.h>
+#include <vector>
+#include <map>
+#include "../../utils/utils.hpp"
+#include "../ClientHandler/ClientHandler.hpp"
 #include "../Config/Config.hpp"
 
 
-// Server.hpp
-
-
-
 class Server {
-public:
-    Server(const Config& config) ;
-    ~Server();
+    public:
+        Server(const Config& config) ;
+        ~Server();
+        void start();
 
-    void start();
+    private:
+        int serverSocket;
+        int epollFd;
+        Config serverConfig;
+        std::map<int, ClientHandler> clientsZone;
+        void handleExistingConnection(int eventFd);
+        void initAndBindSocket();
+        void listenForConnections();
+        void createEpoll();
+        void addSocketToEpoll(int fd);
+        void eventLoop();
+        void acceptConnections();
+        int setNonBlocking(int fd);
+        void handleEvents(struct epoll_event* events, int numEvents);
+        struct addrinfo* setupAddressInfo();
+        void bindToAddress(struct addrinfo* result);
+        void cleanup();
 
-private:
-    int serverSocket;
-    int epollFd;
-    Config serverConfig;
-
-    void initAndBindSocket();
-    void listenForConnections();
-    void createEpoll();
-    void addSocketToEpoll(int fd);
-    void eventLoop();
-    void acceptConnections();
-    void handleConnection(int clientSocket);
-    void cleanup();
-    int setNonBlocking(int fd);
 };
 
 

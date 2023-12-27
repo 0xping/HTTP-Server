@@ -11,6 +11,11 @@ class Config
 	public:
 		std::string port;
 		std::string host;
+		Config(std::string host,std::string port)
+		{
+			this->host=host;
+			this->port=port;
+		}
 
 };
 

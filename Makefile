@@ -1,8 +1,8 @@
 CXX = c++
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98 #-fsanitize=address
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address
 NAME = webserv
 
-SRC = $(wildcard src/*/**.cpp src/*.cpp) main.cpp
+SRC = $(wildcard utils/*.cpp src/*/**.cpp src/*.cpp) main.cpp
 OBJ = $(SRC:.cpp=.o)
 
 all: $(NAME)

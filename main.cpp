@@ -1,14 +1,18 @@
 #include "src/Server/Server.hpp"
 #include "src/Config/Config.hpp"
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <unistd.h>
+#include <sys/epoll.h>
+#include "utils/utils.hpp"
 
 int main() {
-	// Sample Config
-	Config serverConfig;
-	serverConfig.port = "8080";
-	serverConfig.host = "10.13.9.3";  // IP address
+	Config config("127.0.0.1", "8080");
+	Server server(config);
+	server.start();
 
-	// Create and start the server
-	Server myServer(serverConfig);
-	myServer.start();
+
 	return 0;
 }
+
