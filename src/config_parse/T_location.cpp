@@ -1,6 +1,8 @@
 #include "T_location.hpp"
 
 bool t_location::hasMethod(std::string& method){
+    if (allow_methods.empty() && method == "GET")
+        return 1;
     std::vector<std::string>::iterator it;
 
     it = std::find(allow_methods.begin(), allow_methods.end(), method);

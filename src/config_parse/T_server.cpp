@@ -28,7 +28,7 @@ bool t_server::hasLocation(std::string& location){
 
 t_location& t_server::getLocation(std::string& location){
     std::map<std::string, t_location>::iterator it = locations.begin();
-    t_location& re;
+    t_location re;
     int max_match = 0;
 
     for (it; it != locations.end(); it++){
