@@ -239,8 +239,8 @@ void Config::parse_location(std::string& line, std::ifstream& file, t_server& se
 }
 
 void Config::check_location(t_location& location, t_server& server){
-    if (!location.autoindex && location.index.empty())
-        cerrAndExit("ERROR: autoindex for " + location.path + " is off and no index was provided!", 1);
+    // if (!location.autoindex && location.index.empty())
+    //     cerrAndExit("ERROR: autoindex for " + location.path + " is off and no index was provided!", 1);
     if (location.root.empty())
         cerrAndExit("ERROR: root wasn't provided for " + location.path + "!", 1);
     if (server.locations.find(location.path) != server.locations.end())
