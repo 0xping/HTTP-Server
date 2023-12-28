@@ -3,6 +3,7 @@
 #include "../../webserv.hpp"
 #include "T_server.hpp"
 #include "T_location.hpp"
+#include "../utils/utils.hpp"
 
 class Config{         
     void parse_config(std::string config_file);

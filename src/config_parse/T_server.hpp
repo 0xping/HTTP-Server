@@ -2,6 +2,7 @@
 
 #include "../../webserv.hpp"
 #include "T_location.hpp"
+#include "../utils/utils.hpp"
 
 class t_server {
     public:

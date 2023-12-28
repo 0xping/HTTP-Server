@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../webserv.hpp" 
+#include "../utils/utils.hpp"
 
 class t_location {
     public:
