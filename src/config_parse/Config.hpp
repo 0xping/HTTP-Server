@@ -23,5 +23,6 @@ class Config{
     void check_location(t_location& location, t_server& server);
     public:
         Config(std::string config_file);
+        t_server& getServer(std::string& ip, int port, std::string& host);
         std::vector<t_server> servers;
 };

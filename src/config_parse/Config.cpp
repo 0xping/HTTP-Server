@@ -341,3 +341,17 @@ void Config::parse_error_pages(std::string& line, std::string _2ndfield, std::if
         delete[] splitted;
     }
 }
+
+
+t_server& Config::getServer(std::string& ip, int port, std::string& host){
+    std::vector<t_server&> tmp;
+
+    for (std::vector<t_server>::iterator it = servers.begin(); it != servers.end(); it++){
+        if (ip == it->ip && port == it->port){
+            if (host == it->server_name)
+                return *it;
+            tmp.push_back(*it);
+        }
+    }
+    return tmp[0];
+}
