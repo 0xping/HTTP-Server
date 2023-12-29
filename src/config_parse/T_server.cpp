@@ -67,9 +67,11 @@ bool t_server::hasLocation(std::string& location){
 
         while (location[i] && it->first[i] && location[i] == it->first[i])
             i++;
-        if (!location[i] || !it->first[i])
+        if (!it->first[i] && (!location[i] || location[i] == '/'))
             return 1;
     }
+    if (locations.find("/") != locations.end())
+        return 1;
     return 0;
 }
 
@@ -83,10 +85,12 @@ t_location& t_server::getLocation(std::string& location){
 
         while (location[i] && it->first[i] && location[i] == it->first[i])
             i++;
-        if ((!location[i] || !it->first[i]) && i > max_match){
+        if (!it->first[i] && (!location[i] || location[i] == '/') && i > max_match){
             max_match = i;
             re = it->second;
         }
     }
+    if (!max_match)
+        return locations["/"];
     return re;
 }
