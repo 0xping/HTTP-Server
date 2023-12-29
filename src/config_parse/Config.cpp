@@ -243,6 +243,8 @@ void Config::check_location(t_location& location, t_server& server){
     //     cerrAndExit("ERROR: autoindex for " + location.path + " is off and no index was provided!", 1);
     if (location.root.empty())
         cerrAndExit("ERROR: root wasn't provided for " + location.path + "!", 1);
+    if (location.root[location.root.length() - 1] != '/')
+        cerrAndExit("ERROR: root has to be a directory -> " + location.path + "!", 1);
     if (server.locations.find(location.path) != server.locations.end())
         cerrAndExit("ERROR: found duplicate path in locations!\n-> " + location.path, 1);
 }

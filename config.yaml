@@ -42,7 +42,7 @@ server:
       allow_methods:
         - GET
         - POST
-      root: root/zbex
+      root: root/zbex/
       autoindex: on
       cgi_path:
         - php: ./cgi-bin/php-cgi
@@ -100,7 +100,7 @@ server:
       allow_methods:
         - GET
         - POST
-      root: root/zbex
+      root: root/zbex/
       autoindex: on
       cgi_path:
         - php: ./cgi-bin/php-cgi
