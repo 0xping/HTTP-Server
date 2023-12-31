@@ -1,13 +1,11 @@
-CPP=c++
-CPPFLAGS=-Wall -Wextra -Werror -std=c++98 -fsanitize=address
-SRC=main.cpp src/config_parse/Config.cpp src/utils/utils.cpp
-OBJ=$(SRC:.cpp=.o)
-NAME=webserv
+CXX = c++
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address
+NAME = webserv
 
-all:$(NAME)
+SRC = $(wildcard utils/*.cpp src/*/**.cpp src/*.cpp) main.cpp
+OBJ = $(SRC:.cpp=.o)
 
-%.o:%.cpp
-	$(CPP) $(CPPFLAGS) -c $< -o $@
+all: $(NAME)
 
 $(NAME):$(OBJ)
 	$(CPP) $(CPPFLAGS) $(OBJ) -o $(NAME)
