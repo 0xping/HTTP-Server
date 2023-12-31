@@ -8,5 +8,6 @@
 
 std::string strtrim(const std::string& str, const std::string& charsToTrim = " \t\n\r");
 std::vector<std::string> splitWithDelimiters(const std::string& str, const std::vector<std::string>& delimiters);
+std::vector<std::string> split(const std::string& input, const std::string& delimiter);
 
 #endif

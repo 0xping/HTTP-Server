@@ -1,12 +1,11 @@
 #include "ClientHandler.hpp"
 
-ClientHandler::ClientHandler(int clientFd, int epollFd)
+ClientHandler::ClientHandler(int clientFd, int epollFd)//, Config &config)
 {
 	this->epollFd = epollFd;
 	this->clientFd = clientFd;
 	this->headersLoaded = false;
-	this->done = false;
-
+	this->closed = false;
 }
 
 void ClientHandler::refresh()
@@ -16,6 +15,8 @@ void ClientHandler::refresh()
 	{
 		std::cout << "loading HTTP Headers \n\n\n";
 		readFromSocket();
+		if (closed)
+			return ;
 		// Check for end of HTTP headers (double newline or double \r\n)
 		size_t headerEnd = std::min(toRead.find("\r\n\r\n"), toRead.find("\n\n"));
 		if (headerEnd != std::string::npos)
@@ -35,14 +36,12 @@ void ClientHandler::refresh()
 		//and pass the call to the method, HAYTHAM ATACK LOO
 
 		//fake response and then close the connection
-		const char *httpResponse = "HTTP/1.1 200 OK \r\n"
-								   "Content-Type: text/plain\r\n"
-								   "Content-Length: 12\r\n"
-								   "\r\n"
-								   "Hello, World";
-
-		send(this->clientFd, httpResponse, strlen(httpResponse), 0);
-		this->done = true;
+		std::string httpResponse = "HTTP/1.1 200 OK \r\n"
+								"Content-Type: text/plain\r\n"
+								"Content-Length: 12\r\n"
+								"\r\n" "Hello, World";
+		send(this->clientFd, httpResponse.c_str(), httpResponse.size(), 0);
+		closeConnection();
 	}
 
 	// print headers and buffered
@@ -53,31 +52,27 @@ void ClientHandler::refresh()
 
 	std::cout << "\n\n-------> Body  <-------\n" << toRead << '\n';
 }
+#include <unistd.h>
 
 void ClientHandler::readFromSocket(int bufferSize)
 {
 	char buffer[bufferSize];
 	std::memset(buffer, 0, bufferSize);
-	ssize_t bytesRead = recv(this->clientFd, buffer, bufferSize - 1, 0);
+	ssize_t bytesRead = read(this->clientFd, buffer, bufferSize - 1);
 
-	if (bytesRead == 0)
+	if (bytesRead <= 0)
 	{
-		std::cout << "Connection closed by client\n";
-		this->done = true;
-	}
-	if (bytesRead == -1)
-	{
-		if (errno != EAGAIN && errno != EWOULDBLOCK)
-			std::cerr << "Error receiving data: " << strerror(errno) << "\n";
+		if (bytesRead == 0) std::cout << "No bytes to Read, or Connection closed by client\n";
+		if (bytesRead == -1) std::cerr << "Error receiving data: " << strerror(errno) << "\n";
+		// closeConnection();
+		return;
 	}
 	this->toRead.append(buffer);
 }
 
-void ClientHandler::closeSocket() {}
-
 int ClientHandler::loadHeaders(const std::string &data)
 {
-	//TODO :: trim the data first
+	//TODO :: trim the data first || NOT NEEDED
 	std::vector<std::string> delimiters;
 	delimiters.push_back("\n\n");
 	delimiters.push_back("\r\n");
@@ -88,6 +83,9 @@ int ClientHandler::loadHeaders(const std::string &data)
 		if (i == 0)
 		{
 			//check the first line
+			std::vector<std::string> words = split(lines[i], " ");
+			if (words.size() != 3)
+				;// error bad request
 		}
 		else
 		{
@@ -98,5 +96,12 @@ int ClientHandler::loadHeaders(const std::string &data)
 		}
 	}
 	this->headersLoaded = true;
-	return 0; // Consider replacing this with a named constant
+	return 0;
+}
+
+void ClientHandler::closeConnection()
+{
+	epoll_ctl(epollFd, EPOLL_CTL_DEL, clientFd, NULL);
+	close(clientFd);
+	closed = true;
 }

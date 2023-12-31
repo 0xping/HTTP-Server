@@ -28,3 +28,18 @@ std::vector<std::string> splitWithDelimiters(const std::string& str, const std::
 
 	return result;
 }
+
+
+std::vector<std::string> split(const std::string& input, const std::string& delimiters) {
+    std::vector<std::string> result;
+    size_t start = 0, end = 0;
+
+    while ((end = input.find_first_of(delimiters, start)) != std::string::npos) {
+        result.push_back(input.substr(start, end - start));
+        start = end + 1;
+    }
+
+    result.push_back(input.substr(start));
+
+    return result;
+}

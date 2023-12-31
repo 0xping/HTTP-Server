@@ -41,17 +41,20 @@ class ClientHandler
 		int epollFd;
 		requestMessage message;
 		bool headersLoaded;
-		std::string toRead;
+		std::string toSend;
 	public:
+		std::string toRead;
 		int clientFd;
-		bool done;
-		ClientHandler(int clientFd, int epollFd);
-		void refresh();
-		void closeSocket();
+		bool closed;
+
 
 	private:
 		void readFromSocket(int bufferSize = BUFFER_SIZE);
 		int loadHeaders(const std::string& data);
+	public :
+		ClientHandler(int clientFd, int epollFd);
+		void refresh();
+		void closeConnection();
 };
 
 #endif //EVENT_HANDLER_HPP

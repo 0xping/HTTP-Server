@@ -1,11 +1,11 @@
 #include "Server.hpp"
 
-Server:: Server(const Config& config): serverSocket(-1), epollFd(-1), serverConfig(config) {
+Server::Server(const Config& config): serverSocket(-1), serverConfig(config) {
 	std::cout << "Server: Initializing...\n";
 	struct addrinfo* result = setupAddressInfo();
 	bindToAddress(result);
 	freeaddrinfo(result);
-	setNonBlocking(serverSocket);
+	// setNonBlocking(serverSocket);
 	listenForConnections();
 	std::cout << "Server: Initialized successfully\n";
 }
@@ -13,24 +13,6 @@ Server:: Server(const Config& config): serverSocket(-1), epollFd(-1), serverConf
 Server::~Server() {
 	cleanup();
 	std::cout << "Server: Cleaned up resources\n";
-}
-
-void Server::start() {
-	std::cout << "Server: Starting...\n";
-	createEpoll();
-	addSocketToEpoll(serverSocket);
-	eventLoop();
-}
-
-void Server::cleanup() {
-	if (serverSocket != -1) {
-		close(serverSocket);
-		serverSocket = -1;
-	}
-	if (epollFd != -1) {
-		close(epollFd);
-		epollFd = -1;
-	}
 }
 
 struct addrinfo* Server::setupAddressInfo() {
@@ -86,97 +68,9 @@ void Server::listenForConnections() {
 	}
 }
 
-int Server::setNonBlocking(int fd) {
-	int flags = fcntl(fd, F_GETFL, 0);
-	if (flags == -1 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-		std::cerr << "Error setting non-blocking flag on socket\n";
-		return -1;
-	}
-	return 0;
-}
-
-void Server::createEpoll() {
-	epollFd = epoll_create1(0);
-	if (epollFd == -1) {
-		std::cerr << "Error creating epoll instance\n";
-		cleanup();
+void Server::cleanup() {
+	if (serverSocket != -1) {
+		close(serverSocket);
+		serverSocket = -1;
 	}
 }
-
-void Server::addSocketToEpoll(int fd) {
-	struct epoll_event event;
-	event.events = EPOLLIN | EPOLLOUT; // Enable edge-triggered mode
-	event.data.fd = fd;
-
-	if (epoll_ctl(epollFd, EPOLL_CTL_ADD, fd, &event) == -1) {
-		std::cerr << "Error adding socket to epoll\n";
-		cleanup();
-	}
-}
-
-void Server::eventLoop() {
-	const int maxEvents = 64;
-	struct epoll_event events[maxEvents];
-
-	while (true) {
-		int numEvents = epoll_wait(epollFd, events, maxEvents, -1);
-		if (numEvents == -1) {
-			std::cerr << "Error in epoll_wait: " << strerror(errno) << "\n";
-			break;
-		}
-
-		handleEvents(events, numEvents);
-	}
-}
-
-void Server::handleEvents(struct epoll_event* events, int numEvents) {
-	for (int i = 0; i < numEvents; ++i) {
-		int eventFd = events[i].data.fd;
-		if (eventFd == serverSocket) {
-			acceptConnections();
-		} else {
-			handleExistingConnection(eventFd);
-		}
-	}
-}
-
-void Server::handleExistingConnection(int eventFd) {
-	std::map<int, ClientHandler>::iterator it = clientsZone.find(eventFd);
-	if (it == clientsZone.end()) {
-		// New client
-		std::pair<std::map<int, ClientHandler>::iterator, bool> ret;
-		ret = clientsZone.insert(std::pair<int, ClientHandler>(eventFd, ClientHandler(eventFd, epollFd)));
-		it = ret.first;
-	}
-
-	ClientHandler& client = it->second;
-	if (client.done) {
-		epoll_ctl(epollFd, EPOLL_CTL_DEL, eventFd, NULL);
-		close(eventFd);
-		clientsZone.erase(it);
-	} else {
-		client.refresh();
-	}
-}
-
-void Server::acceptConnections() {
-	sockaddr_in clientAddr;
-	socklen_t clientAddrLen = sizeof(clientAddr);
-	int clientSocket = accept(serverSocket, reinterpret_cast<struct sockaddr*>(&clientAddr), &clientAddrLen);
-	if (clientSocket == -1) {
-		if (errno != EAGAIN && errno != EWOULDBLOCK) {
-			std::cerr << "Error accepting connection: " << strerror(errno) << "\n";
-		}
-		return;
-	}
-	std::cout << "Server: Accepted new connection\n";
-
-	if (setNonBlocking(clientSocket) == -1) {
-		std::cerr << "Error setting non-blocking flag on client socket\n";
-		close(clientSocket);
-		return;
-	}
-
-	addSocketToEpoll(clientSocket);
-}
-
