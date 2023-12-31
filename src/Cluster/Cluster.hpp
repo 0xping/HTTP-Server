@@ -25,13 +25,23 @@
 #include <map>
 #include "../../utils/utils.hpp"
 #include "../Server/Server.hpp"
+#include "../Config/ConfigParser.hpp"
+
 
 class Cluster
 {
 	private :
-        std::map<int, ClientHandler> clientsZone;
+		std::map<int, ClientHandler> clientsZone;
 		std::vector <Server*> servers;
 		int epollFd;
+		ClusterConfig config;
+
+	public:
+		/**/
+
+	private:
+		Server& getServerByClientFd(int fd);
+		Server& getServerByFd(int fd);
 		void createEpoll();
 		void addSocketToEpoll(int fd);
 		void eventLoop();
@@ -42,8 +52,7 @@ class Cluster
 		int setNonBlocking(int fd);
 		void cleanup();
 	public:
-		Cluster(std::vector<Config> configs);
-		void start();
+		Cluster(const ClusterConfig &configs);
 };
 
 

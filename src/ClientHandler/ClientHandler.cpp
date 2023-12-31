@@ -1,11 +1,13 @@
 #include "ClientHandler.hpp"
 
-ClientHandler::ClientHandler(int clientFd, int epollFd)//, Config &config)
+ClientHandler::ClientHandler(int clientFd, int epollFd ,const ServerConfig &serverConfig, const ClusterConfig &clusterConfig)
 {
 	this->epollFd = epollFd;
 	this->clientFd = clientFd;
 	this->headersLoaded = false;
 	this->closed = false;
+	this->serverConfig = serverConfig;
+	this->clusterConfig = clusterConfig;
 }
 
 void ClientHandler::refresh()
@@ -31,11 +33,14 @@ void ClientHandler::refresh()
 	}
 	else
 	{
+		if(message.headers.find("host") != message.headers.end())
+			serverConfig = clusterConfig.getServerConfig(serverConfig.ip, serverConfig.port, message.headers["host"]);
 		//headers are parsed
 		//check the method in <message.method>
 		//and pass the call to the method, HAYTHAM ATACK LOO
 
 		//fake response and then close the connection
+
 		std::string httpResponse = "HTTP/1.1 200 OK \r\n"
 								"Content-Type: text/plain\r\n"
 								"Content-Length: 12\r\n"
@@ -83,7 +88,7 @@ int ClientHandler::loadHeaders(const std::string &data)
 		if (i == 0)
 		{
 			//check the first line
-			std::vector<std::string> words = split(lines[i], " ");
+			std::vector<std::string> words = strSplit(lines[i], " ");
 			if (words.size() != 3)
 				;// error bad request
 		}

@@ -1,24 +1,23 @@
 #include "Cluster.hpp"
 
-
-Cluster::Cluster(std::vector<Config> configs)
+Cluster::Cluster(const ClusterConfig &configs)
 {
-	std::cout << "Cluster: Servers Starting...\n";
 	createEpoll();
 
-	for (size_t i = 0; i < configs.size() ; i++)
+	std::vector <ServerConfig> serverConfigs = configs.servers;
+	for (size_t i = 0; i < serverConfigs.size() ; i++)
 	{
-		Server *serv = new Server(configs[i]);
+		// passing all the cluster config the each server
+		Server *serv = new Server(serverConfigs[i], configs);
 		if (serv->serverSocket != -1) servers.push_back(serv);
 		else
 			delete serv;
 	}
-
 	for (size_t i = 0; i < servers.size() ; i++)
 		addSocketToEpoll(servers[i]->serverSocket);
-
 	eventLoop();
 }
+
 
 void Cluster::createEpoll() {
 	epollFd = epoll_create(64);
@@ -103,12 +102,34 @@ bool Cluster::isServerFd(int fd)
 	return false;
 }
 
+Server& Cluster::getServerByClientFd(int fd)
+{
+	for (size_t i = 0; i < servers.size(); i++) {
+		if (servers[i]->connectedClients.find(fd) != servers[i]->connectedClients.end())
+			return *servers[i];
+	}
+
+	throw std::runtime_error("getServerByClientFd: Server not found for given file descriptor");
+}
+
+Server& Cluster::getServerByFd(int fd)
+{
+	for (size_t i = 0; i < servers.size(); i++) {
+		if (servers[i]->serverSocket == fd) {
+			return *servers[i];
+		}
+	}
+
+	throw std::runtime_error("getServerByFd:Server not found for given file descriptor");
+}
+
 void Cluster::handleExistingConnection(int eventFd) {
+	ServerConfig &serverConfig = getServerByClientFd(eventFd).serverConfig;
 	std::map<int, ClientHandler>::iterator it = clientsZone.find(eventFd);
 	if (it == clientsZone.end()) {
 		// New client
 		std::pair<std::map<int, ClientHandler>::iterator, bool> ret;
-		ret = clientsZone.insert(std::pair<int, ClientHandler>(eventFd, ClientHandler(eventFd, epollFd)));
+		ret = clientsZone.insert(std::pair<int, ClientHandler>(eventFd, ClientHandler(eventFd, epollFd, serverConfig, config)));
 		it = ret.first;
 	}
 
@@ -138,4 +159,5 @@ void Cluster::acceptConnections(int serverSocket) {
 	}
 
 	addSocketToEpoll(clientSocket);
+	getServerByFd(serverSocket).connectedClients.insert(clientSocket);
 }

@@ -1,5 +1,5 @@
 #include "src/Server/Server.hpp"
-#include "src/Config/Config.hpp"
+#include "src/Config/ConfigParser.hpp"
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -8,14 +8,16 @@
 #include "utils/utils.hpp"
 #include "src/Cluster/Cluster.hpp"
 
-int main() {
+int main(int ac, char const *av[])
+{
+	std::string configFile = "config.yaml";
+	if(ac < 2)
+		std::cerr << "no config file provided using ./config.yaml as default\n\n";
+	else
+		configFile = av[1];
 
-	std::vector<Config> configs;
-	Config config("127.0.0.1", "8080"), config1("127.0.0.1", "8082");
-	configs.push_back(config);
-	configs.push_back(config1);
-
-	Cluster Servers(configs);
-
+	ConfigParser clusterConfig(configFile);
+	Cluster servers(clusterConfig);
 	return 0;
 }
+

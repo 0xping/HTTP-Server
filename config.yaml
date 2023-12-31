@@ -1,0 +1,115 @@
+server:
+  listen: 127.0.0.1:8080
+  max_client_body_size: 21448473648
+  error_page:
+    - 400: main_errors/error400.html
+    - 404: main_errors/error404.html
+    - 405: main_errors/error404.html
+  server_name: example1.com
+
+  location:
+    /root:
+      allow_methods:
+        - GET
+      root: ./root/
+      autoindex: off
+      index:
+        - test
+        - nigga
+
+    /:
+      allow_methods:
+        - GET
+      root: ./root/
+      autoindex: on
+
+    /ahmed:
+      allow_methods:
+        - GET
+      root: ./root/ahmed/
+      autoindex: on
+
+    /enja:
+      allow_methods:
+        - GET
+      root: ./root/enja/
+      autoindex: on
+      cgi_path:
+        - php: ./cgi-bin/php-cgi
+        - py: /usr/local/bin/python3
+
+    /zbex:
+      allow_methods:
+        - GET
+        - POST
+      root: root/zbex/
+      autoindex: on
+      cgi_path:
+        - php: ./cgi-bin/php-cgi
+        - py: /usr/local/bin/python3
+
+    /delete:
+      allow_methods:
+        - GET
+        - DELETE
+      root: ./root/testdelete/test/
+      autoindex: on
+      return: http://www.google.com/
+
+
+server:
+  listen: 127.0.0.1:8081
+  max_client_body_size: 21448473648
+  error_page:
+    - 400: main_errors/error400.html
+    - 404: main_errors/error404.html
+  server_name: example1.com
+
+  location:
+    /root:
+      allow_methods:
+        - GET
+      root: ./root/
+      autoindex: on
+      index:
+        - test
+        - nigga
+
+    /:
+      allow_methods:
+        - GET
+      root: ./root/
+      autoindex: on
+
+    /ahmed:
+      allow_methods:
+        - GET
+      root: ./root/ahmed/
+      autoindex: on
+
+    /enja:
+      allow_methods:
+        - GET
+      root: ./root/enja/
+      autoindex: on
+      cgi_path:
+        - php: ./cgi-bin/php-cgi
+        - py: /usr/local/bin/python3
+
+    /zbex:
+      allow_methods:
+        - GET
+        - POST
+      root: root/zbex/
+      autoindex: on
+      cgi_path:
+        - php: ./cgi-bin/php-cgi
+        - py: /usr/local/bin/python3
+
+    /delete:
+      allow_methods:
+        - GET
+        - DELETE
+      root: ./root/testdelete/test/
+      autoindex: on
+      return: http://www.google.com/

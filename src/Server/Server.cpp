@@ -1,6 +1,10 @@
 #include "Server.hpp"
 
-Server::Server(const Config& config): serverSocket(-1), serverConfig(config) {
+Server::Server(const ServerConfig& serverConfig, const ClusterConfig& clusterConfig):
+	serverSocket(-1),
+	serverConfig(serverConfig),
+	clusterConfig(clusterConfig)
+{
 	std::cout << "Server: Initializing...\n";
 	struct addrinfo* result = setupAddressInfo();
 	bindToAddress(result);
@@ -23,7 +27,14 @@ struct addrinfo* Server::setupAddressInfo() {
 	hints.ai_socktype = SOCK_STREAM; // TCP SOCKET
 	hints.ai_flags = AI_PASSIVE;	// Use wildcard IP address
 
-	int status = getaddrinfo(serverConfig.host.c_str(), serverConfig.port.c_str(), &hints, &result);
+	std::string portAsStr;
+	std::stringstream ss;
+  	ss << serverConfig.port;
+  	ss >> portAsStr;
+
+	std::cout << serverConfig.ip << "   "  << portAsStr << "\n\n";
+
+	int status = getaddrinfo(serverConfig.ip.c_str(), portAsStr.c_str(), &hints, &result);
 	if (status != 0) {
 		std::cerr << "Error in getaddrinfo: " << gai_strerror(status) << "\n";
 		cleanup();
@@ -40,6 +51,7 @@ void Server::bindToAddress(struct addrinfo* result) {
 		serverSocket = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
 		if (serverSocket == -1) continue;
 
+		// remove
 		int reuse = 1;
 		if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) == -1) {
 			std::cerr << "Error setting SO_REUSEADDR: " << strerror(errno) << "\n";

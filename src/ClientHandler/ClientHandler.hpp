@@ -24,6 +24,8 @@
 #include <vector>
 #include <map>
 #include "../../utils/utils.hpp"
+#include "../Config/ConfigParser.hpp"
+#include "../Config/ServerConfig.hpp"
 
 struct requestMessage
 {
@@ -46,15 +48,18 @@ class ClientHandler
 		std::string toRead;
 		int clientFd;
 		bool closed;
+		ServerConfig serverConfig;
+		ClusterConfig clusterConfig;
 
 
 	private:
 		void readFromSocket(int bufferSize = BUFFER_SIZE);
 		int loadHeaders(const std::string& data);
 	public :
-		ClientHandler(int clientFd, int epollFd);
+		ClientHandler(int clientFd, int epollFd ,const  ServerConfig &serverConfig, const ClusterConfig &config);
 		void refresh();
 		void closeConnection();
+
 };
 
 #endif //EVENT_HANDLER_HPP
