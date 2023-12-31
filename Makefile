@@ -7,15 +7,13 @@ OBJ = $(SRC:.cpp=.o)
 
 all: $(NAME)
 
-$(NAME): $(SRC)
-	$(CXX) $(CXXFLAGS) $(SRC) -o $(NAME)
+$(NAME):$(OBJ)
+	$(CPP) $(CPPFLAGS) $(OBJ) -o $(NAME)
 
 clean:
-	@rm -rf $(OBJ)
+	rm -f $(OBJ)
 
-fclean: clean
-	@rm -rf $(NAME)
+fclean:clean
+	rm -f $(NAME)
 
-re: fclean all
-
-.PHONY: all clean fclean re
+re:fclean all
