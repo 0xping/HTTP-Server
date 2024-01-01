@@ -67,7 +67,7 @@ class ClientHandler
 	public:
 		bool closed;		
 
-	// cgi
+	// parsing
 	private:
 		Location location;
 		std::string full_location;
