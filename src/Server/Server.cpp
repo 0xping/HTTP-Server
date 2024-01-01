@@ -29,8 +29,8 @@ struct addrinfo* Server::setupAddressInfo() {
 
 	std::string portAsStr;
 	std::stringstream ss;
-  	ss << serverConfig.port;
-  	ss >> portAsStr;
+	ss << serverConfig.port;
+	ss >> portAsStr;
 
 	std::cout << serverConfig.ip << "   "  << portAsStr << "\n\n";
 
