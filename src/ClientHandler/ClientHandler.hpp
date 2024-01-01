@@ -2,7 +2,6 @@
 #ifndef CLIENT_HANDLER_HPP
 #define CLIENT_HANDLER_HPP
 
-#include <map>
 #include <string>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -12,6 +11,7 @@
 #include <cstdio>
 #include <unistd.h>
 #include <functional>
+
 #include <stdexcept>
 #include <arpa/inet.h>
 #include <iostream>
@@ -26,6 +26,7 @@
 #include "../../utils/utils.hpp"
 #include "../Config/ConfigParser.hpp"
 #include "../Config/ServerConfig.hpp"
+#include "../Binary/Binary.hpp"
 
 struct requestMessage
 {
@@ -42,10 +43,10 @@ class ClientHandler
 	private:
 		int epollFd;
 		requestMessage message;
-		bool headersLoaded;
 		std::string toSend;
 	public:
-		std::string toRead;
+		bool headersLoaded;
+		Binary toRead;
 		int clientFd;
 		bool closed;
 		ServerConfig serverConfig;
@@ -54,11 +55,12 @@ class ClientHandler
 
 	private:
 		void readFromSocket(int bufferSize = BUFFER_SIZE);
-		int loadHeaders(const std::string& data);
+		int loadHeaders();
 	public :
 		ClientHandler(int clientFd, int epollFd ,const  ServerConfig &serverConfig, const ClusterConfig &config);
-		void refresh();
 		void closeConnection();
+		void receive();
+		void send();
 
 };
 
