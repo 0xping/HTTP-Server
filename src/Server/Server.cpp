@@ -9,7 +9,7 @@ Server::Server(const ServerConfig& serverConfig, const ClusterConfig& clusterCon
 	struct addrinfo* result = setupAddressInfo();
 	bindToAddress(result);
 	freeaddrinfo(result);
-	// setNonBlocking(serverSocket);
+	setNonBlocking(serverSocket);
 	listenForConnections();
 	std::cout << "Server: Initialized successfully\n";
 }
@@ -51,7 +51,6 @@ void Server::bindToAddress(struct addrinfo* result) {
 		serverSocket = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
 		if (serverSocket == -1) continue;
 
-		// remove
 		int reuse = 1;
 		if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) == -1) {
 			std::cerr << "Error setting SO_REUSEADDR: " << strerror(errno) << "\n";
@@ -71,6 +70,20 @@ void Server::bindToAddress(struct addrinfo* result) {
 		return;
 	}
 }
+
+int Server::setNonBlocking(int fd) {
+	int flags = fcntl(fd, F_GETFL, 0);
+	if (flags == -1) {
+		std::cerr << "Error setting socket to None-Blocking mode\n";
+		return -1;
+	}
+	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+		std::cerr << "Error setting socket to None-Blocking mode\n";
+		return -1;
+	}
+	return 0;
+}
+
 
 
 void Server::listenForConnections() {
