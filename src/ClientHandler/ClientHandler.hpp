@@ -60,9 +60,19 @@ class ClientHandler
 		std::string getExtension(std::string& filename);
 		std::string getContentLength(std::ifstream& file);
 		std::string generateHeaders(std::string& statusCode, std::map<std::string, std::string>& headers, std::string& filename, std::ifstream& file, bool isCgi=false);
+
 	public:
 		bool closed;		
 
+	// cgi
+	private:
+		Location location;
+		std::string full_location;
+		std::string query;
+		std::string rawFileName;
+		void proccessLocation();
+		bool isCgiFile(std::string& filename);
+		void execCGI(std::string& filename, std::string& query);
 
 	private:
 		void readFromSocket(int bufferSize = BUFFER_SIZE);

@@ -94,6 +94,8 @@ int ClientHandler::loadHeaders(const std::string &data)
 			if (words.size() != 3)
 				;// error bad request
 			message.method = words[0];
+			message.location = words[1];
+			proccessLocation();
 		}
 		else
 		{
@@ -105,6 +107,16 @@ int ClientHandler::loadHeaders(const std::string &data)
 	}
 	this->headersLoaded = true;
 	return 0;
+}
+
+void ClientHandler::proccessLocation(){
+	std::string* splitted = split(message.location, '?'); 
+
+	location = serverConfig.getLocation(message.location);
+	query = splitted[1];
+	full_location = location.root + &(splitted[0][1]);	
+	
+	delete[] splitted;
 }
 
 void ClientHandler::closeConnection()
