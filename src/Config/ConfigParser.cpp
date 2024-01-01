@@ -43,17 +43,13 @@ void ConfigParser::parse_server(std::ifstream& file){
         else
             parse_line(tmp, file, server);
     }
-    if (tmp.empty())
-        cerrAndExit("ERROR: config file can't be empty!", 1);
     check_server(server);
     servers.push_back(server);
 }
 
 void ConfigParser::check_server(ServerConfig& server){
-    if (server.ip.empty())
-        cerrAndExit("ERROR: server has to have a listen field!", 1);
-    if (server.locations.empty())
-        cerrAndExit("ERROR: server has to have at least one location!", 1);
+    if (server.ip.empty() || server.locations.empty())
+        cerrAndExit("ERROR: there has to be at least one server! every server has to have a listen field and at least 1 location!", 1);
 }
 
 void ConfigParser::check_leading_spaces(std::string& str, int n){
