@@ -21,6 +21,8 @@
 #include <cerrno>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/wait.h>
+#include <ctime>
 #include <vector>
 #include <map>
 #include "../../utils/utils.hpp"
@@ -55,7 +57,7 @@ class ClientHandler
 		bool headersSent;		
 		int Offset;
 
-		void SendResponse(std::string statusCode, std::map<std::string, std::string>& headers, std::string file, bool isCgi=false);
+		void SendResponse(std::string statusCode, std::map<std::string, std::string> headers, std::string file, bool isCgi=false);
 		std::string getMimeType(std::string ext);
 		std::string getExtension(std::string& filename);
 		std::string getContentLength(std::ifstream& file);
@@ -70,9 +72,11 @@ class ClientHandler
 		std::string full_location;
 		std::string query;
 		std::string rawFileName;
+		std::string cgi_path;
+
 		void proccessLocation();
 		bool isCgiFile(std::string& filename);
-		void execCGI(std::string& filename, std::string& query);
+		void execCGI(std::string& filename);
 
 	private:
 		void readFromSocket(int bufferSize = BUFFER_SIZE);

@@ -127,7 +127,7 @@ void ClientHandler::closeConnection()
 }
 
 
-void ClientHandler::SendResponse(std::string statusCode, std::map<std::string, std::string>& headers, std::string file, bool isCgi){
+void ClientHandler::SendResponse(std::string statusCode, std::map<std::string, std::string> headers, std::string file, bool isCgi){
 	std::string re;
 	std::ifstream fileToSend;
 	std::vector<std::string> errorPageNStatus = serverConfig.getErrorPage(statusCode);
@@ -168,8 +168,11 @@ void ClientHandler::SendResponse(std::string statusCode, std::map<std::string, s
 			toSend.clear();
 		}
 	}
-	if (fileToSend.eof() && toSend.empty())
+	if (fileToSend.eof() && toSend.empty()){
+		if (isCgi)
+			std::remove(file.c_str());
 		closeConnection();
+	}
 	
 	fileToSend.close();
 	exit(1);
@@ -236,4 +239,56 @@ std::string ClientHandler::getMimeType(std::string ext){
 	if (it != mimeTypes.end())
 		return it->second;
 	return "text/plain";
+}
+
+bool ClientHandler::isCgiFile(std::string& filename){
+	std::string ext = getExtension(filename);
+	if (location.cgi_path.find(ext) != location.cgi_path.end()){
+		cgi_path = location.cgi_path[ext]; 
+		return 1;
+	}
+	return 0;
+}
+
+void ClientHandler::execCGI(std::string& filepath){
+	std::srand(std::time(0)); 
+	std::stringstream ss;
+	ss << std::rand();
+	std::string cgioutput = "/tmp/cgioutput" + ss.str() + ".txt";
+	pid_t pid = fork(); 
+	if (pid){
+		if (pid < 0)
+			SendResponse("500", std::map<std::string, std::string>(), "");
+		int status;
+		clock_t startTime = clock();
+		while (waitpid(pid, &status, WNOHANG) == 0){
+			clock_t endTime = clock();
+			double elapsedTime = static_cast<double>(endTime - startTime) / CLOCKS_PER_SEC;
+			if (elapsedTime >= 30){
+				SendResponse("500", std::map<std::string, std::string>(), "");
+				kill(pid, SIGTERM);
+				return ;
+			}
+		}
+    	if (WIFEXITED(status)){
+			if (!WEXITSTATUS(status))
+				SendResponse("200", std::map<std::string, std::string>(), cgioutput);
+			else
+				SendResponse("500", std::map<std::string, std::string>(), "");
+		}
+		else if (WIFSIGNALED(status))
+			SendResponse("500", std::map<std::string, std::string>(), "");
+    	
+	}
+	else{
+		int fd = open(filepath.c_str(), O_WRONLY);
+		if (fd < 0)
+			exit(1);
+		const char *args[] = {cgi_path.c_str(), filepath.c_str(), NULL};
+		const char *env[] = {query.c_str(), NULL};
+		if (dup2(fd,1) == -1)
+			exit(1);
+		execve(filepath.c_str(), (char *const *)args, (char *const *)env);
+		exit(1);
+	}
 }

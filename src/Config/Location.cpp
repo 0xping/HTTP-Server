@@ -16,7 +16,3 @@ bool Location::hasCGI(std::string& cgi){
         return 1;
     return 0;
 }
-
-std::string& Location::getCGIPath(std::string& cgi){
-    return cgi_path[cgi];
-}

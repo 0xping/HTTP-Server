@@ -23,8 +23,7 @@ class Location {
         std::vector<std::string> allow_methods;
         std::map<std::string, std::string> cgi_path;
         bool                     autoindex;
-
+        
         bool hasMethod(std::string& method);
         bool hasCGI(std::string& cgi);
-        std::string& getCGIPath(std::string& cgi);
 };
