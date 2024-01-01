@@ -96,6 +96,7 @@ int ClientHandler::loadHeaders(const std::string &data)
 			message.method = words[0];
 			message.location = words[1];
 			proccessLocation();
+			checkPath();
 		}
 		else
 		{
