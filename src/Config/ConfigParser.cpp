@@ -29,10 +29,8 @@ void ConfigParser::parse_server(std::ifstream& file){
         if (isAllSpaces(tmp))
             continue;
         trim_spaces(tmp, 0);
-        if (!s && tmp != "server:")  {
-            std::cout << tmp << std::endl;
+        if (!s && tmp != "server:")
             cerrAndExit("ERROR: file must start with server!", 1);
-        }
         if (!s && tmp == "server:")
             s = 1;
         else if (s && tmp == "server:"){
@@ -348,7 +346,7 @@ void ConfigParser::parse_error_pages(std::string& line, std::string _2ndfield, s
 ServerConfig& ConfigParser::getServerConfig(std::string& ip, int port, std::string& host){
     std::vector<ServerConfig*> tmp;
 
-    for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); it++){
+    for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); it++){                
         if (ip == it->ip && port == it->port){
             if (host == it->server_name)
                 return *it;

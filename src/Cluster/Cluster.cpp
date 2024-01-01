@@ -2,6 +2,7 @@
 
 Cluster::Cluster(const ClusterConfig &configs)
 {
+	this->config = configs;
 	createEpoll();
 
 	std::vector <ServerConfig> serverConfigs = configs.servers;

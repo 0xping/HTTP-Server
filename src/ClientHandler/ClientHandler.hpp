@@ -47,15 +47,28 @@ class ClientHandler
 	public:
 		std::string toRead;
 		int clientFd;
-		bool closed;
 		ServerConfig serverConfig;
 		ClusterConfig clusterConfig;
+
+	// send response
+	private:	
+		bool headersSent;		
+		int Offset;
+
+		void SendResponse(std::string statusCode, std::map<std::string, std::string>& headers, std::string file, bool isCgi=false);
+		std::string getMimeType(std::string ext);
+		std::string getExtension(std::string& filename);
+		std::string getContentLength(std::ifstream& file);
+		std::string generateHeaders(std::string& statusCode, std::map<std::string, std::string>& headers, std::string& filename, std::ifstream& file, bool isCgi=false);
+	public:
+		bool closed;		
 
 
 	private:
 		void readFromSocket(int bufferSize = BUFFER_SIZE);
 		int loadHeaders(const std::string& data);
-	public :
+
+	public:
 		ClientHandler(int clientFd, int epollFd ,const  ServerConfig &serverConfig, const ClusterConfig &config);
 		void refresh();
 		void closeConnection();
