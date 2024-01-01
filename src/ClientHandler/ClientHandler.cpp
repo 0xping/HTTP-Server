@@ -110,11 +110,14 @@ int ClientHandler::loadHeaders(const std::string &data)
 }
 
 void ClientHandler::proccessLocation(){
-	std::string* splitted = split(message.location, '?'); 
+	std::string* splitted = split(message.location, '?');
+	std::string delimeter = "/";
+	std::vector<std::string> strVec = strSplit(splitted[0], delimeter);
 
 	location = serverConfig.getLocation(message.location);
 	query = splitted[1];
 	full_location = location.root + &(splitted[0][1]);	
+	isCgipath = isCgiFile(strVec[strVec.size() - (1 * (bool)strVec.size())]);
 	
 	delete[] splitted;
 }
@@ -131,16 +134,17 @@ void ClientHandler::SendResponse(std::string statusCode, std::map<std::string, s
 	std::string re;
 	std::ifstream fileToSend;
 	std::vector<std::string> errorPageNStatus = serverConfig.getErrorPage(statusCode);
-
-	if (!file.empty())
-		fileToSend.open(file.c_str());
-	else{
-		file = errorPageNStatus[0];
-		fileToSend.open(file.c_str());
-	}
-	fileToSend.seekg(Offset);		
+		
 	char buffer[1024];
 	if (!headersSent){
+		if (!file.empty()){
+			FileName = file;
+			fileToSend.open(file.c_str());
+		}
+		else{
+			FileName = errorPageNStatus[0];
+			fileToSend.open(FileName.c_str());
+		}
 		re = generateHeaders(statusCode, headers, file, fileToSend, isCgi);
 
 		if (re.length() <= 1024){
@@ -156,6 +160,8 @@ void ClientHandler::SendResponse(std::string statusCode, std::map<std::string, s
 		headersSent = 1;
 	}
 	else{
+		fileToSend.open(FileName.c_str());
+		fileToSend.seekg(Offset);
 		if (toSend.length() > 1024){
 			send(clientFd, toSend.c_str(), 1024, 0);
 			toSend = &toSend[1024];
@@ -290,5 +296,25 @@ void ClientHandler::execCGI(std::string& filepath){
 			exit(1);
 		execve(filepath.c_str(), (char *const *)args, (char *const *)env);
 		exit(1);
+	}
+}
+
+
+void ClientHandler::checkPath(){
+	struct stat fileInfo;
+
+	if (access(full_location.c_str(), F_OK) == 0){
+		stat(full_location.c_str(), &fileInfo);
+		if (S_ISDIR(fileInfo.st_mode))
+			isDir = 1;
+		else{
+			if (isCgipath && access(full_location.c_str(), X_OK) != 0)
+				SendResponse("403", std::map<std::string, std::string>(), "");
+			else if (access(full_location.c_str(), R_OK) != 0)
+				SendResponse("403", std::map<std::string, std::string>(), "");
+		}
+	}
+	else{
+		SendResponse("404", std::map<std::string, std::string>(), "");
 	}
 }

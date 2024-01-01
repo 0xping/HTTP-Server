@@ -6,6 +6,7 @@
 #include <string>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <netdb.h>
 #include <cstring>
 #include <iostream>
@@ -71,8 +72,9 @@ class ClientHandler
 		Location location;
 		std::string full_location;
 		std::string query;
-		std::string rawFileName;
+		std::string FileName;
 		std::string cgi_path;
+		bool isCgipath;
 
 		void proccessLocation();
 		bool isCgiFile(std::string& filename);
@@ -81,6 +83,10 @@ class ClientHandler
 	private:
 		void readFromSocket(int bufferSize = BUFFER_SIZE);
 		int loadHeaders(const std::string& data);
+		
+		//parsing
+		void checkPath();
+		bool isDir;
 
 	public:
 		ClientHandler(int clientFd, int epollFd ,const  ServerConfig &serverConfig, const ClusterConfig &config);
