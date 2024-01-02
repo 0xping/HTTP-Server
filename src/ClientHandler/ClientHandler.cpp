@@ -91,8 +91,8 @@ int ClientHandler::loadHeaders(const std::string &data)
 		{
 			//check the first line
 			std::vector<std::string> words = strSplit(lines[i], " ");
-			if (words.size() != 3)
-				;// error bad request
+			//if (words.size() != 3)
+				// error bad request
 			message.method = words[0];
 			message.location = words[1];
 			proccessLocation();
@@ -136,7 +136,7 @@ void ClientHandler::SendResponse(std::string statusCode, std::map<std::string, s
 	std::ifstream fileToSend;
 	std::vector<std::string> errorPageNStatus = serverConfig.getErrorPage(statusCode);
 		
-	char buffer[1024];
+	char buffer[BUFFER_SIZE];
 	if (!headersSent){
 		if (!file.empty()){
 			FileName = file;
@@ -148,14 +148,14 @@ void ClientHandler::SendResponse(std::string statusCode, std::map<std::string, s
 		}
 		re = generateHeaders(statusCode, headers, file, fileToSend, isCgi);
 
-		if (re.length() <= 1024){
-			fileToSend.read(buffer, 1024 - re.length());
+		if (re.length() <= BUFFER_SIZE){
+			fileToSend.read(buffer, BUFFER_SIZE - re.length());
 			Offset = fileToSend.tellg();
 			re += buffer;
 		}
 		else{
-			toSend = &re[1024];
-			re.resize(1024);
+			toSend = &re[BUFFER_SIZE];
+			re.resize(BUFFER_SIZE);
 		}
 		send(clientFd, re.c_str(), re.length(), 0);
 		headersSent = 1;
@@ -163,12 +163,12 @@ void ClientHandler::SendResponse(std::string statusCode, std::map<std::string, s
 	else{
 		fileToSend.open(FileName.c_str());
 		fileToSend.seekg(Offset);
-		if (toSend.length() > 1024){
-			send(clientFd, toSend.c_str(), 1024, 0);
-			toSend = &toSend[1024];
+		if (toSend.length() > BUFFER_SIZE){
+			send(clientFd, toSend.c_str(), BUFFER_SIZE, 0);
+			toSend = &toSend[BUFFER_SIZE];
 		}
 		else{
-			fileToSend.read(buffer, 1024 - toSend.length());
+			fileToSend.read(buffer, BUFFER_SIZE - toSend.length());
 			Offset = fileToSend.tellg();
 			toSend += buffer;
 			send(clientFd, toSend.c_str(), toSend.length(), 0);
@@ -308,12 +308,8 @@ void ClientHandler::checkPath(){
 		stat(full_location.c_str(), &fileInfo);
 		if (S_ISDIR(fileInfo.st_mode))
 			isDir = 1;
-		else{
-			if (isCgipath && access(full_location.c_str(), X_OK) != 0)
-				SendResponse("403", std::map<std::string, std::string>(), "");
-			else if (access(full_location.c_str(), R_OK) != 0)
-				SendResponse("403", std::map<std::string, std::string>(), "");
-		}
+		else if (access(full_location.c_str(), R_OK) != 0)
+			SendResponse("403", std::map<std::string, std::string>(), "");
 	}
 	else{
 		SendResponse("404", std::map<std::string, std::string>(), "");

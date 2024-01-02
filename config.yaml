@@ -3,7 +3,7 @@ server:
   max_client_body_size: 21448473648
   error_page:
     - 400: main_errors/error400.html
-    - 404: main_errors/error404.html
+    - 403: main_errors/error404.html
     - 405: main_errors/error404.html
   server_name: example1.com
 
