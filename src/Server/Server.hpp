@@ -35,6 +35,7 @@ class Server {
         int serverSocket;
         ServerConfig serverConfig;
         std::set<int> connectedClients;
+        int setNonBlocking(int fd);
 
     private:
         ConfigParser clusterConfig;

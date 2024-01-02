@@ -47,7 +47,7 @@ class Cluster
 		void eventLoop();
 		void handleEvents(struct epoll_event* events, int numEvents);
 		bool isServerFd(int fd);
-		void handleExistingConnection(int eventFd);
+		void handleExistingConnection(int eventFd, uint32_t eventsData);
 		void acceptConnections(int serverSocket);
 		int setNonBlocking(int fd);
 		void cleanup();

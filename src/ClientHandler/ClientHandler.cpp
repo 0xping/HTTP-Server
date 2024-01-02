@@ -8,107 +8,122 @@ ClientHandler::ClientHandler(int clientFd, int epollFd ,const ServerConfig &serv
 	this->closed = false;
 	this->serverConfig = serverConfig;
 	this->clusterConfig = clusterConfig;
-	this->Offset = 0;
+	//total = 0;
 }
 
-void ClientHandler::refresh()
-{
-	std::cout << "Server: Client Refreshed\n";
-	if (!headersLoaded)
-	{
-		std::cout << "loading HTTP Headers \n\n\n";
+void ClientHandler::receive() {
+	// Client ready to receive data
+	std::cout << "ClientHandler: Client Receiving...\n";
+	if (!headersLoaded) {
 		readFromSocket();
 		if (closed)
-			return ;
-		// Check for end of HTTP headers (double newline or double \r\n)
-		size_t headerEnd = std::min(toRead.find("\r\n\r\n"), toRead.find("\n\n"));
-		if (headerEnd != std::string::npos)
-		{
+			return;
+		if (loadHeaders())
+			return; // Bad request
+	}
+
+	std::cout << "Headers Loaded" << std::endl;
+}
+
+void ClientHandler::send() {
+	// Client ready to send data
+	if (!headersLoaded) {
+		return;
+	}
+
+	std::cout << "ClientHandler: Client Sending...\n";
+
+	// Send the response
+	// std::string httpResponse = "HTTP/1.1 200 OK \r\n"
+	// 						   "Content-Type: text/plain\r\n"
+	// 						   "Content-Length: 12\r\n"
+	// 						   "\r\n"
+	// 						   "Hello, World";
+	while (!closed){
+		std::cout << full_location << std::endl;
+		SendResponse("200", std::map<std::string, std::string>(), full_location);
+	}
+	std::cout << "----> out of loop! closed == " << closed << std::endl;
+	// int bytesSent = ::send(this->clientFd, httpResponse.c_str(), httpResponse.size(), 0);
+	// if (bytesSent <= -1) {
+	// 	std::cerr << "Error sending data: " << strerror(errno) << "\n";
+	// 	closeConnection();
+	// 	return;
+	// }
+
+}
+
+void ClientHandler::readFromSocket(int bufferSize) {
+	unsigned char buffer[bufferSize];
+	std::memset(buffer, 0, bufferSize);
+	ssize_t bytesRead = recv(this->clientFd, buffer, bufferSize - 1, 0);
+
+	if (bytesRead <= 0) {
+		if (bytesRead == 0)
+			std::cout << "No bytes to Read, or Connection closed by client\n";
+		if (bytesRead == -1)
+			std::cerr << "Error receiving data: " << strerror(errno) << "\n";
+		closeConnection();
+		return;
+	}
+	this->toRead.append(buffer, bytesRead);
+}
+
+void ClientHandler::closeConnection() {
+	closed = true;
+	// epoll_ctl(epollFd, EPOLL_CTL_DEL, clientFd, NULL);
+	// close(clientFd);
+}
+
+int ClientHandler::loadHeaders() {
+	if (!headersLoaded) {
+		std::cout << "Loading HTTP Headers \n\n\n";
+		// Check for the end of HTTP headers (double newline or double \r\n)
+		size_t headerEnd = std::min(toRead.toStr().find("\r\n\r\n"), toRead.toStr().find("\n\n"));
+		if (headerEnd != std::string::npos) {
 			// Headers received, process the headers
-			std::string headersStr = toRead.substr(0, headerEnd);
-			loadHeaders(headersStr);
+			std::string headersStr = toRead.toStr().substr(0, headerEnd);
+			// TODO: Trim the data first || NOT NEEDED
+			std::vector<std::string> delimiters;
+			delimiters.push_back("\n\n");
+			delimiters.push_back("\r\n");
+
+			std::vector<std::string> lines = splitWithDelimiters(headersStr, delimiters);
+			for (size_t i = 0; i < lines.size(); i++) {
+				if (i == 0) {
+					// Check the first line
+					std::vector<std::string> words = strSplit(lines[i], " ");
+					// if (words.size() != 3)
+					//	 ; // Error bad request
+					message.method = words[0];
+					message.location = words[1];
+					if(message.headers.find("Host") != message.headers.end())
+						serverConfig = clusterConfig.getServerConfig(serverConfig.ip, serverConfig.port, message.headers["host"]);
+					proccessLocation();
+					checkPath();
+					
+				} else {
+					size_t colonPos = lines[i].find(':');
+					std::string key = lines[i].substr(0, colonPos);
+					std::string value = (colonPos != std::string::npos) ? lines[i].substr(colonPos + 1) : "";
+					message.headers[key] = value;
+				}
+			}
+			this->headersLoaded = true;
 			// Determine the start of the body
 			size_t bodyStart = headerEnd == toRead.find("\r\n\r\n") ? headerEnd + 4 : headerEnd + 2;
 			toRead = toRead.substr(bodyStart);
 		}
 	}
-	else
-	{
-		if(message.headers.find("Host") != message.headers.end())
-			serverConfig = clusterConfig.getServerConfig(serverConfig.ip, serverConfig.port, message.headers["host"]);
-		//headers are parsed
-		//check the method in <message.method>
-		//and pass the call to the method, HAYTHAM ATACK LOO
-
-		//fake response and then close the connection
-
-		// std::string httpResponse = "HTTP/1.1 200 OK \r\n"
-		// 						"Content-Type: text/plain\r\n"
-		// 						"Content-Length: 12\r\n"
-		// 						"\r\n" "Hello, World";
-		// send(this->clientFd, httpResponse.c_str(), httpResponse.size(), 0);
-		std::map<std::string, std::string> nn;
-		nn["test"] = "niggah";
-		SendResponse("200", nn, "index.html");
-	}
-
-	// print headers and buffered
-	std::cout << "-------> Headers <------- \n\n";
-	for (std::map<std::string, std::string>::const_iterator it = message.headers.begin(); it != message.headers.end(); ++it) {
-		std::cout << it->first << ":" << it->second << '\n';
-	}
-
-	std::cout << "\n\n-------> Body  <-------\n" << toRead << '\n';
-}
-
-void ClientHandler::readFromSocket(int bufferSize)
-{
-	char buffer[bufferSize];
-	std::memset(buffer, 0, bufferSize);
-	ssize_t bytesRead = read(this->clientFd, buffer, bufferSize - 1);
-
-	if (bytesRead <= 0)
-	{
-		if (bytesRead == 0) std::cout << "No bytes to Read, or Connection closed by client\n";
-		if (bytesRead == -1) std::cerr << "Error receiving data: " << strerror(errno) << "\n";
-		// closeConnection();
-		return;
-	}
-	this->toRead.append(buffer);
-}
-
-int ClientHandler::loadHeaders(const std::string &data)
-{
-	//TODO :: trim the data first || NOT NEEDED
-	std::vector<std::string> delimiters;
-	delimiters.push_back("\n\n");
-	delimiters.push_back("\r\n");
-
-	std::vector<std::string> lines = splitWithDelimiters(data, delimiters);
-	for (size_t i = 0; i < lines.size(); i++)
-	{
-		if (i == 0)
-		{
-			//check the first line
-			std::vector<std::string> words = strSplit(lines[i], " ");
-			//if (words.size() != 3)
-				// error bad request
-			message.method = words[0];
-			message.location = words[1];
-			proccessLocation();
-			checkPath();
-		}
-		else
-		{
-			size_t colonPos = lines[i].find(':');
-			std::string key = lines[i].substr(0, colonPos);
-			std::string value = (colonPos != std::string::npos) ? lines[i].substr(colonPos + 1) : "";
-			message.headers[key] = value;
-		}
-	}
-	this->headersLoaded = true;
 	return 0;
 }
+
+// std::cout << "-------> Headers <------- " << message.headers.size() << "\n\n";
+// for (std::map<std::string, std::string>::const_iterator it = message.headers.begin(); it != message.headers.end(); ++it) {
+//	 std::cout << it->first << ":" << it->second << '\n';
+// }
+
+// std::cout << "\n\n-------> Body  <-------\n" << toRead << '\n';
 
 void ClientHandler::proccessLocation(){
 	std::string* splitted = split(message.location, '?');
@@ -118,74 +133,54 @@ void ClientHandler::proccessLocation(){
 	location = serverConfig.getLocation(message.location);
 	query = splitted[1];
 	full_location = location.root + &(splitted[0][1]);	
-	isCgipath = isCgiFile(strVec[strVec.size() - (1 * (bool)strVec.size())]);
+	isCgipath = isCgiFile();
 	
 	delete[] splitted;
 }
 
-void ClientHandler::closeConnection()
-{
-	epoll_ctl(epollFd, EPOLL_CTL_DEL, clientFd, NULL);
-	close(clientFd);
-	closed = true;
-}
-
-
 void ClientHandler::SendResponse(std::string statusCode, std::map<std::string, std::string> headers, std::string file, bool isCgi){
-	std::string re;
-	std::ifstream fileToSend;
-	std::vector<std::string> errorPageNStatus = serverConfig.getErrorPage(statusCode);
-		
-	char buffer[BUFFER_SIZE];
+	char buffer[BUFFER_SIZE + 1] =  {0};
+	int readLen = 0;
+
 	if (!headersSent){
+		isCgiSending = isCgi;	
+		std::string re;
+		std::vector<std::string> errorPageNStatus = serverConfig.getErrorPage(statusCode);
 		if (!file.empty()){
 			FileName = file;
-			fileToSend.open(file.c_str());
+			toSendFd = open(file.c_str(), O_RDONLY);
 		}
 		else{
 			FileName = errorPageNStatus[0];
-			fileToSend.open(FileName.c_str());
+			toSendFd = open(errorPageNStatus[0].c_str(), O_RDONLY);
 		}
-		re = generateHeaders(statusCode, headers, file, fileToSend, isCgi);
 
-		if (re.length() <= BUFFER_SIZE){
-			fileToSend.read(buffer, BUFFER_SIZE - re.length());
-			Offset = fileToSend.tellg();
-			re += buffer;
-		}
-		else{
-			toSend = &re[BUFFER_SIZE];
-			re.resize(BUFFER_SIZE);
-		}
-		send(clientFd, re.c_str(), re.length(), 0);
+		re = generateHeaders(statusCode, headers, isCgi);
+
+		readLen = read(toSendFd, buffer, BUFFER_SIZE - re.length());
+		re += buffer;
+
+		::send(clientFd, re.c_str(), re.length(), 0);
 		headersSent = 1;
 	}
 	else{
-		fileToSend.open(FileName.c_str());
-		fileToSend.seekg(Offset);
-		if (toSend.length() > BUFFER_SIZE){
-			send(clientFd, toSend.c_str(), BUFFER_SIZE, 0);
-			toSend = &toSend[BUFFER_SIZE];
-		}
-		else{
-			fileToSend.read(buffer, BUFFER_SIZE - toSend.length());
-			Offset = fileToSend.tellg();
-			toSend += buffer;
-			send(clientFd, toSend.c_str(), toSend.length(), 0);
-			toSend.clear();
-		}
+		readLen = read(toSendFd, buffer, BUFFER_SIZE); 	
+		::send(clientFd, buffer, readLen, 0);
 	}
-	if (fileToSend.eof() && toSend.empty()){
-		if (isCgi)
-			std::remove(file.c_str());
+	// std::cout << "-> read len: " << readLen << std::endl;
+	//total += readLen;
+	if (!readLen){
+		//std::cout << "here" << std::endl;
+		if (isCgiSending)
+			std::remove(FileName.c_str());
 		closeConnection();
+		close(toSendFd);
+		//std::cout << "total = " << total << std::endl;
+		//exit(1);
 	}
-	
-	fileToSend.close();
-	exit(1);
 }
 
-std::string ClientHandler::generateHeaders(std::string& statusCode, std::map<std::string, std::string>& headers, std::string& filename, std::ifstream& file, bool isCgi){
+std::string ClientHandler::generateHeaders(std::string& statusCode, std::map<std::string, std::string>& headers, bool isCgi){
 	std::string re;
 	std::vector<std::string> errorPageNStatus = serverConfig.getErrorPage(statusCode);
 
@@ -193,26 +188,26 @@ std::string ClientHandler::generateHeaders(std::string& statusCode, std::map<std
 	for (std::map<std::string,std::string>::iterator it = headers.begin(); it != headers.end(); it++){
 			re += it->first + ": " + it->second + "\r\n";
 	}
-	re += "Content-Type: " + getMimeType(getExtension(filename)) + "\r\n";		
-	re += "Content-Length: " + getContentLength(file) + "\r\n";
+	re += "Content-Type: " + getMimeType(getExtension()) + "\r\n";		
+	re += "Content-Length: " + getContentLength() + "\r\n";
 	if (!isCgi)
 		re += "\r\n";
 	return re;
 }
 
-std::string ClientHandler::getExtension(std::string& filename){
-	std::vector<std::string> splitted = strSplit(filename, ".");
+std::string ClientHandler::getExtension(){
+	if (FileName.find(".") == std::string::npos)
+		return "";
+	std::vector<std::string> splitted = strSplit(FileName, ".");
 	return splitted[splitted.size() - 1];
 }
 
-std::string ClientHandler::getContentLength(std::ifstream& file){	
-	std::stringstream ss;
-	std::streampos originalPos = file.tellg();
-
-	file.seekg(0, std::ios_base::end);
-	ss << file.tellg();
-	file.seekg(originalPos);
-	return ss.str();
+std::string ClientHandler::getContentLength(){
+	std::stringstream ss;	
+    struct stat file_info;
+    fstat(toSendFd, &file_info);
+	ss << file_info.st_size;
+    return ss.str();
 }
 
 std::string ClientHandler::getMimeType(std::string ext){
@@ -223,6 +218,7 @@ std::string ClientHandler::getMimeType(std::string ext){
     mimeTypes["css"] = "text/css";
     mimeTypes["js"] = "application/javascript";
     mimeTypes["jpg"] = "image/jpeg";
+    mimeTypes["webp"] = "image/webp";
     mimeTypes["png"] = "image/png";
     mimeTypes["gif"] = "image/gif";
     mimeTypes["pdf"] = "application/pdf";
@@ -248,8 +244,8 @@ std::string ClientHandler::getMimeType(std::string ext){
 	return "text/plain";
 }
 
-bool ClientHandler::isCgiFile(std::string& filename){
-	std::string ext = getExtension(filename);
+bool ClientHandler::isCgiFile(){
+	std::string ext = getExtension();
 	if (location.cgi_path.find(ext) != location.cgi_path.end()){
 		cgi_path = location.cgi_path[ext]; 
 		return 1;
@@ -308,10 +304,13 @@ void ClientHandler::checkPath(){
 		stat(full_location.c_str(), &fileInfo);
 		if (S_ISDIR(fileInfo.st_mode))
 			isDir = 1;
-		else if (access(full_location.c_str(), R_OK) != 0)
+		else if (access(full_location.c_str(), R_OK) != 0){
 			SendResponse("403", std::map<std::string, std::string>(), "");
+			std::cout << "+++++++++++++++++++++ hna \n"<<std::endl;
+		}
 	}
 	else{
-		SendResponse("404", std::map<std::string, std::string>(), "");
+		std::cout << "+++++++++++++++++++++error\n"<<std::endl;
+		SendResponse("404", std::map<std::string, std::string>(), "index.html");
 	}
 }

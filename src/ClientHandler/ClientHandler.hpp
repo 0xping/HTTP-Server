@@ -2,7 +2,6 @@
 #ifndef CLIENT_HANDLER_HPP
 #define CLIENT_HANDLER_HPP
 
-#include <map>
 #include <string>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -13,6 +12,7 @@
 #include <cstdio>
 #include <unistd.h>
 #include <functional>
+
 #include <stdexcept>
 #include <arpa/inet.h>
 #include <iostream>
@@ -29,6 +29,7 @@
 #include "../../utils/utils.hpp"
 #include "../Config/ConfigParser.hpp"
 #include "../Config/ServerConfig.hpp"
+#include "../Binary/Binary.hpp"
 
 struct requestMessage
 {
@@ -45,24 +46,27 @@ class ClientHandler
 	private:
 		int epollFd;
 		requestMessage message;
-		bool headersLoaded;
-		std::string toSend;
+		//int total;
+		
+
 	public:
-		std::string toRead;
+		bool headersLoaded;
+		Binary toRead;
+		std::string FileName;
 		int clientFd;
 		ServerConfig serverConfig;
 		ClusterConfig clusterConfig;
 
 	// send response
 	private:	
-		bool headersSent;		
-		int Offset;
+		bool headersSent;
+		bool isCgiSending;		
 
 		void SendResponse(std::string statusCode, std::map<std::string, std::string> headers, std::string file, bool isCgi=false);
 		std::string getMimeType(std::string ext);
-		std::string getExtension(std::string& filename);
-		std::string getContentLength(std::ifstream& file);
-		std::string generateHeaders(std::string& statusCode, std::map<std::string, std::string>& headers, std::string& filename, std::ifstream& file, bool isCgi=false);
+		std::string getExtension();
+		std::string getContentLength();
+		std::string generateHeaders(std::string& statusCode, std::map<std::string, std::string>& headers, bool isCgi=false);
 
 	public:
 		bool closed;		
@@ -72,26 +76,28 @@ class ClientHandler
 		Location location;
 		std::string full_location;
 		std::string query;
-		std::string FileName;
+		int toSendFd;
 		std::string cgi_path;
 		bool isCgipath;
 
 		void proccessLocation();
-		bool isCgiFile(std::string& filename);
+		bool isCgiFile();
 		void execCGI(std::string& filename);
 
 	private:
 		void readFromSocket(int bufferSize = BUFFER_SIZE);
-		int loadHeaders(const std::string& data);
+		int loadHeaders();
 		
 		//parsing
 		void checkPath();
 		bool isDir;
 
-	public:
+
+	public :
 		ClientHandler(int clientFd, int epollFd ,const  ServerConfig &serverConfig, const ClusterConfig &config);
-		void refresh();
 		void closeConnection();
+		void receive();
+		void send();
 
 };
 

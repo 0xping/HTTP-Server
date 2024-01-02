@@ -66,43 +66,6 @@ int Cluster::setNonBlocking(int fd) {
 }
 
 
-void Cluster::eventLoop() {
-	const int maxEvents = 64;
-	struct epoll_event events[maxEvents];
-
-	while (true) {
-		int numEvents = epoll_wait(epollFd, events, maxEvents, -1);
-		if (numEvents == -1) {
-			std::cerr << "Error in epoll_wait: " << strerror(errno) << "\n";
-			break;
-		}
-
-		handleEvents(events, numEvents);
-	}
-}
-
-void Cluster::handleEvents(struct epoll_event* events, int numEvents) {
-	for (int i = 0; i < numEvents; ++i) {
-		int eventFd = events[i].data.fd;
-		if (isServerFd(eventFd)) {
-			acceptConnections(eventFd);
-		} else {
-			handleExistingConnection(eventFd);
-		}
-	}
-}
-
-bool Cluster::isServerFd(int fd)
-{
-	for (size_t i = 0; i < servers.size() ; i++)
-	{
-		if (servers[i]->serverSocket == fd) {
-			return true;
-		}
-	}
-	return false;
-}
-
 Server& Cluster::getServerByClientFd(int fd)
 {
 	for (size_t i = 0; i < servers.size(); i++) {
@@ -124,7 +87,47 @@ Server& Cluster::getServerByFd(int fd)
 	throw std::runtime_error("getServerByFd:Server not found for given file descriptor");
 }
 
-void Cluster::handleExistingConnection(int eventFd) {
+bool Cluster::isServerFd(int fd)
+{
+	for (size_t i = 0; i < servers.size() ; i++)
+	{
+		if (servers[i]->serverSocket == fd) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void Cluster::eventLoop() {
+	const int maxEvents = 64;
+	struct epoll_event events[maxEvents];
+
+	while (true) {
+		//std::cout << clientsZone.size() << " ---\n\n";
+		std::cout << "waiting..." << std::endl;
+		int numEvents = epoll_wait(epollFd, events, maxEvents, -1);
+		if (numEvents == -1) {
+			std::cerr << "Error in epoll_wait: " << strerror(errno) << "\n";
+			break;
+		}
+
+		handleEvents(events, numEvents);
+	}
+}
+
+void Cluster::handleEvents(struct epoll_event* events, int numEvents) {
+	for (int i = 0; i < numEvents; ++i) {
+		int eventFd = events[i].data.fd;
+		if (isServerFd(eventFd)) {
+			acceptConnections(eventFd);
+		} else {
+			handleExistingConnection(eventFd, events[i].events);
+		}
+	}
+}
+
+
+void Cluster::handleExistingConnection(int eventFd, uint32_t eventsData) {
 	ServerConfig &serverConfig = getServerByClientFd(eventFd).serverConfig;
 	std::map<int, ClientHandler>::iterator it = clientsZone.find(eventFd);
 	if (it == clientsZone.end()) {
@@ -135,10 +138,15 @@ void Cluster::handleExistingConnection(int eventFd) {
 	}
 
 	ClientHandler& client = it->second;
-	if (client.closed) {
-		clientsZone.erase(it);
-	} else {
-		client.refresh();
+
+	std::cout << "Ready to " << (eventsData & EPOLLIN ? "receive" : "send") << std::endl;
+	if (eventsData & EPOLLIN) client.receive();
+	if (eventsData & EPOLLOUT) client.send();
+	if (client.closed){
+		std::cout << "connection Closed Remove client from the Map" << std::endl;
+			epoll_ctl(epollFd, EPOLL_CTL_DEL, client.clientFd, NULL);
+			close(client.clientFd);
+			clientsZone.erase(it);
 	}
 }
 
@@ -147,7 +155,6 @@ void Cluster::acceptConnections(int serverSocket) {
 	socklen_t clientAddrLen = sizeof(clientAddr);
 	int clientSocket = accept(serverSocket, reinterpret_cast<struct sockaddr*>(&clientAddr), &clientAddrLen);
 	if (clientSocket == -1) {
-		// if (errno != EAGAIN && errno != EWOULDBLOCK)
 		std::cerr << "Error accepting connection: " << strerror(errno) << "\n";
 		return;
 	}
