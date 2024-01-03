@@ -5,10 +5,19 @@ ClientHandler::ClientHandler(int clientFd, int epollFd ,const ServerConfig &serv
 	this->epollFd = epollFd;
 	this->clientFd = clientFd;
 	this->headersLoaded = false;
-	this->closed = false;
 	this->serverConfig = serverConfig;
 	this->clusterConfig = clusterConfig;
-	//total = 0;
+
+	//send
+	this->headersSent = false;
+	this->closed = false;
+	//parsing
+	this->isDir = false;
+	this->isCgipath = false;
+
+	//cgi
+	this->isCgiSending = false;
+	total = 0;
 }
 
 void ClientHandler::receive() {
@@ -40,8 +49,8 @@ void ClientHandler::send() {
 	// 						   "\r\n"
 	// 						   "Hello, World";
 	while (!closed){
-		std::cout << full_location << std::endl;
 		SendResponse("200", std::map<std::string, std::string>(), full_location);
+		usleep(20 * 1000);
 	}
 	std::cout << "----> out of loop! closed == " << closed << std::endl;
 	// int bytesSent = ::send(this->clientFd, httpResponse.c_str(), httpResponse.size(), 0);
@@ -140,7 +149,6 @@ void ClientHandler::proccessLocation(){
 
 void ClientHandler::SendResponse(std::string statusCode, std::map<std::string, std::string> headers, std::string file, bool isCgi){
 	char buffer[BUFFER_SIZE + 1] =  {0};
-	int readLen = 0;
 
 	if (!headersSent){
 		isCgiSending = isCgi;	
@@ -157,26 +165,21 @@ void ClientHandler::SendResponse(std::string statusCode, std::map<std::string, s
 
 		re = generateHeaders(statusCode, headers, isCgi);
 
-		readLen = read(toSendFd, buffer, BUFFER_SIZE - re.length());
-		re += buffer;
-
 		::send(clientFd, re.c_str(), re.length(), 0);
 		headersSent = 1;
 	}
 	else{
-		readLen = read(toSendFd, buffer, BUFFER_SIZE); 	
+		int readLen = 0;
+		readLen = read(toSendFd, buffer, BUFFER_SIZE);	
 		::send(clientFd, buffer, readLen, 0);
-	}
-	// std::cout << "-> read len: " << readLen << std::endl;
-	//total += readLen;
-	if (!readLen){
-		//std::cout << "here" << std::endl;
-		if (isCgiSending)
-			std::remove(FileName.c_str());
-		closeConnection();
-		close(toSendFd);
-		//std::cout << "total = " << total << std::endl;
-		//exit(1);
+
+		// close connection if done reading	
+		if (!readLen){
+			if (isCgiSending)
+				std::remove(FileName.c_str());
+			closeConnection();
+			close(toSendFd);
+		}
 	}
 }
 
@@ -308,17 +311,14 @@ void ClientHandler::execCGI(){
 void ClientHandler::checkPath(){
 	struct stat fileInfo;
 
+	std::cout << full_location << std::endl;
 	if (access(full_location.c_str(), F_OK) == 0){
 		stat(full_location.c_str(), &fileInfo);
 		if (S_ISDIR(fileInfo.st_mode))
 			isDir = 1;
-		else if (access(full_location.c_str(), R_OK) != 0){
+		else if (access(full_location.c_str(), R_OK) != 0)
 			SendResponse("403", std::map<std::string, std::string>(), "");
-			std::cout << "+++++++++++++++++++++ hna \n"<<std::endl;
-		}
 	}
-	else{
-		std::cout << "+++++++++++++++++++++error\n"<<std::endl;
-		SendResponse("404", std::map<std::string, std::string>(), "index.html");
-	}
+	else
+		SendResponse("404", std::map<std::string, std::string>(), "");
 }

@@ -1,5 +1,5 @@
 server:
-  listen: 127.0.0.1:8080
+  listen: 127.0.0.1:8082
   max_client_body_size: 21448473648
   error_page:
     - 400: index.html
@@ -60,7 +60,7 @@ server:
 
 
 server:
-  listen: 127.0.0.1:8081
+  listen: 127.0.0.1:8084
   max_client_body_size: 21448473648
   error_page:
     - 400: main_errors/error400.html

@@ -46,7 +46,7 @@ class ClientHandler
 	private:
 		int epollFd;
 		requestMessage message;
-		//int total;
+		int total;
 		
 
 	public:
