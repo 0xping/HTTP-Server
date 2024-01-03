@@ -82,7 +82,7 @@ class ClientHandler
 
 		void proccessLocation();
 		bool isCgiFile();
-		void execCGI(std::string& filename);
+		void execCGI();
 
 	private:
 		void readFromSocket(int bufferSize = BUFFER_SIZE);

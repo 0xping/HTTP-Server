@@ -253,21 +253,24 @@ bool ClientHandler::isCgiFile(){
 	return 0;
 }
 
-void ClientHandler::execCGI(std::string& filepath){
+void ClientHandler::execCGI(){
 	std::srand(std::time(0)); 
 	std::stringstream ss;
 	ss << std::rand();
 	std::string cgioutput = "/tmp/cgioutput" + ss.str() + ".txt";
 	pid_t pid = fork(); 
 	if (pid){
-		if (pid < 0)
+		if (pid < 0){
+			std::remove(cgioutput.c_str());
 			SendResponse("500", std::map<std::string, std::string>(), "");
+		}
 		int status;
 		clock_t startTime = clock();
 		while (waitpid(pid, &status, WNOHANG) == 0){
 			clock_t endTime = clock();
 			double elapsedTime = static_cast<double>(endTime - startTime) / CLOCKS_PER_SEC;
 			if (elapsedTime >= 30){
+				std::remove(cgioutput.c_str());
 				SendResponse("500", std::map<std::string, std::string>(), "");
 				kill(pid, SIGTERM);
 				return ;
@@ -275,23 +278,27 @@ void ClientHandler::execCGI(std::string& filepath){
 		}
     	if (WIFEXITED(status)){
 			if (!WEXITSTATUS(status))
-				SendResponse("200", std::map<std::string, std::string>(), cgioutput);
-			else
+				SendResponse("200", std::map<std::string, std::string>(), cgioutput, 1);
+			else{
+				std::remove(cgioutput.c_str());
 				SendResponse("500", std::map<std::string, std::string>(), "");
+			}
 		}
-		else if (WIFSIGNALED(status))
+		else if (WIFSIGNALED(status)){
+			std::remove(cgioutput.c_str());
 			SendResponse("500", std::map<std::string, std::string>(), "");
+		}
     	
 	}
 	else{
-		int fd = open(filepath.c_str(), O_WRONLY);
+		int fd = open(full_location.c_str(), O_WRONLY);
 		if (fd < 0)
 			exit(1);
-		const char *args[] = {cgi_path.c_str(), filepath.c_str(), NULL};
+		const char *args[] = {cgi_path.c_str(), full_location.c_str(), NULL};
 		const char *env[] = {query.c_str(), NULL};
 		if (dup2(fd,1) == -1)
 			exit(1);
-		execve(filepath.c_str(), (char *const *)args, (char *const *)env);
+		execve(full_location.c_str(), (char *const *)args, (char *const *)env);
 		exit(1);
 	}
 }
