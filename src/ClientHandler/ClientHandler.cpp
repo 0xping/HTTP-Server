@@ -276,6 +276,7 @@ void ClientHandler::execCGI(){
 				return ;
 			}
 		}
+		
     	if (WIFEXITED(status)){
 			if (!WEXITSTATUS(status))
 				SendResponse("200", std::map<std::string, std::string>(), cgioutput, 1);
