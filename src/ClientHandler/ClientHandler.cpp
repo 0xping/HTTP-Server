@@ -8,7 +8,7 @@ ClientHandler::ClientHandler(int clientFd, int epollFd ,const ServerConfig &serv
 	this->serverConfig = serverConfig;
 	this->clusterConfig = clusterConfig;
 	this->status = Receiving;
-
+	this->postedFileName = "";
 }
 
 
@@ -28,9 +28,27 @@ void ClientHandler::readyToReceive() {
 		else
 			throw HttpError(BadRequest, "Bad Request");
 		parseRequest();
+		if (this->postedFileName == "")
+		{
+			char tmp_filename[L_tmpnam];
+			if (std::tmpnam(tmp_filename))
+			{
+				this->postedFileName = std::string(tmp_filename);
+				std::cout << "filename: " + this->postedFileName << std::endl;
+			}
+			else
+			{
+				std::cerr << "Can't create the file\n";
+				throw HttpError(InternalServerError, "Internal Server Error");
+			}
+		}
+		freopen(this->postedFileName.c_str(), "a", stdout);
+		std::cout << this->readingBuffer;
+		this->readingBuffer.erase(0, this->readingBuffer.size());
+		freopen("/dev/tty", "w", stdout);
 		// check and call the method DELETE or POST <No GET>
 		// to send a request form a method , just append to sendingBuffer
-		status = Sending;
+		// status = Sending;
 	}
 	catch (const HttpError& e)
 	{

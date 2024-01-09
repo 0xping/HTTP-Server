@@ -46,7 +46,8 @@ enum ClientStatus {
 class ClientHandler : public RequestParser {
 	private:
 		int epollFd;
-		bool headersSent;
+		// bool headersSent;
+		std::string postedFileName;
 	public:
 		ClientStatus status;
 		Binary readingBuffer;
