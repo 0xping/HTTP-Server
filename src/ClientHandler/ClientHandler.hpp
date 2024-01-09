@@ -12,7 +12,6 @@
 #include <cstdio>
 #include <unistd.h>
 #include <functional>
-
 #include <stdexcept>
 #include <arpa/inet.h>
 #include <iostream>
@@ -26,78 +25,43 @@
 #include <ctime>
 #include <vector>
 #include <map>
+#include "../RequestParser/RequestParser.hpp"
 #include "../../utils/utils.hpp"
 #include "../Config/ConfigParser.hpp"
 #include "../Config/ServerConfig.hpp"
 #include "../Binary/Binary.hpp"
 
-struct requestMessage
-{
-	std::string method;
-	std::string location;
-	std::map<std::string, std::string> headers;
-	// std::string body;
-};
 
 const int BUFFER_SIZE = 1024;
 
-class ClientHandler
-{
+enum ClientStatus {
+	Receiving, // ready to Receive
+	Sending, // ready to Send
+	Error, // an error occurred
+	Closed, // connection closed
+};
+
+
+
+class ClientHandler : public RequestParser {
 	private:
 		int epollFd;
-		requestMessage message;
-		int total;
-		
-
+		bool headersSent;
 	public:
-		bool headersLoaded;
-		Binary toRead;
-		std::string FileName;
+		ClientStatus status;
+		Binary readingBuffer;
+		Binary sendingBuffer;
 		int clientFd;
 		ServerConfig serverConfig;
 		ClusterConfig clusterConfig;
 
-	// send response
-	private:	
-		bool headersSent;
-		bool isCgiSending;		
-
-		void SendResponse(std::string statusCode, std::map<std::string, std::string> headers, std::string file, bool isCgi=false);
-		std::string getMimeType(std::string ext);
-		std::string getExtension();
-		std::string getContentLength();
-		std::string generateHeaders(std::string& statusCode, std::map<std::string, std::string>& headers, bool isCgi=false);
-
-	public:
-		bool closed;		
-
-	// parsing
 	private:
-		Location location;
-		std::string full_location;
-		std::string query;
-		int toSendFd;
-		std::string cgi_path;
-		bool isCgipath;
-
-		void proccessLocation();
-		bool isCgiFile();
-		void execCGI();
-
-	private:
+		void sendToSocket();
 		void readFromSocket(int bufferSize = BUFFER_SIZE);
-		int loadHeaders();
-		
-		//parsing
-		void checkPath();
-		bool isDir;
-
-
 	public :
 		ClientHandler(int clientFd, int epollFd ,const  ServerConfig &serverConfig, const ClusterConfig &config);
-		void closeConnection();
-		void receive();
-		void send();
+		void readyToReceive();
+		void readyToSend();
 
 };
 
