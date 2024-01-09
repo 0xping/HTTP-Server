@@ -43,32 +43,41 @@ void ClientHandler::readyToReceive() {
 
 void ClientHandler::readyToSend() {
 	// Client ready to send data
-
-	if (status == Error)
+	try
 	{
-		// check and send the error page
-		// set status to Closed if done sending
-		return ;
-	}
-
-	if (headersLoaded && status == Sending)
-	{
-
-		if (message.method == "GET")
+		if (status == Error)
 		{
-			// call get Method to fill the sendingBuffer and then call sendToSocket
-			unsigned char httpResponse[] =  "HTTP/1.1 200 OK \r\n"
-							   "Content-Type: text/plain\r\n"
-							   "Content-Length: 12\r\n"
-							   "\r\n"
-							   "Hello, World";
-			sendingBuffer.append(httpResponse,std::strlen((char *)httpResponse));
-			sendToSocket();
+			// check and send the error page
+			// set status to Closed if done sending
+			return ;
 		}
 
+		if (headersLoaded && status == Sending)
+		{
 
-		/// set status to Closed if done sending
-		status = Closed;
+			if (message.method == "GET")
+			{
+				// call get Method to fill the sendingBuffer and then call sendToSocket
+				unsigned char httpResponse[] =  "HTTP/1.1 200 OK \r\n"
+								"Content-Type: text/plain\r\n"
+								"Content-Length: 12\r\n"
+								"\r\n"
+								"Hello, World";
+				sendingBuffer.append(httpResponse,std::strlen((char *)httpResponse));
+				sendToSocket();
+			}
+
+
+			/// set status to Closed if done sending
+			status = Closed;
+		}
+	}
+	catch (const HttpError& e)
+	{
+		status = Error;
+		int errorCode = static_cast<int>(e.getErrorCode());
+		std::cerr << "HTTP Error (" << errorCode << "): " << e.what() << std::endl;
+		// TODO : store the error state in the object and wait for a send event to come
 	}
 }
 
