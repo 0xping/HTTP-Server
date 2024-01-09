@@ -17,3 +17,11 @@ bool isAllDigit(std::string &str){
     return 1;
 }
 
+bool allCharactersAllowed(const std::string& str, const std::string& allowedChars) {
+    for (std::size_t i = 0; i < str.length(); ++i) {
+        if (allowedChars.find_first_of(str[i]) == std::string::npos) {
+            return false; // Found a character not in allowedChars
+        }
+    }
+    return true; // All characters are in allowedChars
+}
