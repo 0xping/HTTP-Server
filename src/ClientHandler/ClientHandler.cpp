@@ -20,18 +20,16 @@ void ClientHandler::readyToReceive() {
 		{
 			readFromSocket();
 			loadHeaders(readingBuffer);
+			return;
 		}
+		std::cout << "Headers Loaded" << std::endl;
+		if (message.headers.find("Host") != message.headers.end())
+			serverConfig = clusterConfig.getServerConfig(serverConfig.ip, serverConfig.port, message.headers["Host"]);
 		else
-		{
-			std::cout << "Headers Loaded" << std::endl;
-			if (message.headers.find("Host") != message.headers.end())
-				serverConfig = clusterConfig.getServerConfig(serverConfig.ip, serverConfig.port, message.headers["Host"]);
-			else
-				throw HttpError(BadRequest, "Bad Request");
-			parseRequest();
-			// check and call the method DELETE or POST <No GET>
-			// to send a request form a method , just append to sendingBuffer
-		}
+			throw HttpError(BadRequest, "Bad Request");
+		parseRequest();
+		// check and call the method DELETE or POST <No GET>
+		// to send a request form a method , just append to sendingBuffer
 		status = Sending;
 	}
 	catch (const HttpError& e)
