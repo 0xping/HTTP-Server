@@ -52,9 +52,9 @@ std::string Binary::toStr() const {
 }
 
 void Binary::erase(size_t start, size_t length) {
-    if (start < data.size()) {
-        data.erase(data.begin() + start, data.begin() + std::min(start + length, data.size()));
-    }
+	if (start < data.size()) {
+		data.erase(data.begin() + start, data.begin() + std::min(start + length, data.size()));
+	}
 }
 
 size_t Binary::size() {return data.size();}
