@@ -104,7 +104,7 @@ void Cluster::eventLoop() {
 
 	while (true) {
 		//std::cout << clientsZone.size() << " ---\n\n";
-		std::cout << "waiting..." << std::endl;
+		// std::cout << "waiting..." << std::endl;
 		int numEvents = epoll_wait(epollFd, events, maxEvents, -1);
 		if (numEvents == -1) {
 			std::cerr << "Error in epoll_wait: " << strerror(errno) << "\n";
@@ -154,8 +154,8 @@ void Cluster::handleExistingConnection(int eventFd, uint32_t eventsData) {
 		// ...
 		std::cout << "connection Closed Remove client from the Map" << std::endl;
 		epoll_ctl(epollFd, EPOLL_CTL_DEL, client.clientFd, NULL);
-		struct epoll_event events;
-		epoll_wait(epollFd, &events, 1, -1);
+		// struct epoll_event events;
+		// epoll_wait(epollFd, &events, 1, -1);
 		close(client.clientFd);
 		clientsZone.erase(it);
 	}

@@ -20,35 +20,20 @@ void ClientHandler::readyToReceive() {
 		{
 			readFromSocket();
 			loadHeaders(readingBuffer);
-			return;
 		}
-		std::cout << "Headers Loaded" << std::endl;
-		if (message.headers.find("Host") != message.headers.end())
-			serverConfig = clusterConfig.getServerConfig(serverConfig.ip, serverConfig.port, message.headers["Host"]);
-		else
-			throw HttpError(BadRequest, "Bad Request");
-		parseRequest();
-		if (this->postedFileName == "")
+		if (headersLoaded)
 		{
-			char tmp_filename[L_tmpnam];
-			if (std::tmpnam(tmp_filename))
-			{
-				this->postedFileName = std::string(tmp_filename);
-				std::cout << "filename: " + this->postedFileName << std::endl;
-			}
+			std::cout << "Headers Loaded" << std::endl;
+			if (message.headers.find("Host") != message.headers.end())
+				serverConfig = clusterConfig.getServerConfig(serverConfig.ip, serverConfig.port, message.headers["Host"]);
 			else
-			{
-				std::cerr << "Can't create the file\n";
-				throw HttpError(InternalServerError, "Internal Server Error");
-			}
+				throw HttpError(BadRequest, "Bad Request");
+			parseRequest();
+			
 		}
-		freopen(this->postedFileName.c_str(), "a", stdout);
-		std::cout << this->readingBuffer;
-		this->readingBuffer.erase(0, this->readingBuffer.size());
-		freopen("/dev/tty", "w", stdout);
 		// check and call the method DELETE or POST <No GET>
 		// to send a request form a method , just append to sendingBuffer
-		// status = Sending;
+		status = Sending;
 	}
 	catch (const HttpError& e)
 	{
@@ -128,7 +113,6 @@ void ClientHandler::sendToSocket()
 	while (totalBytesSent < sendingBuffer.toStr().size())
 	{
 		ssize_t sendBytes = ::write(this->clientFd, sendingBuffer.toStr().c_str() + totalBytesSent, sendingBuffer.toStr().size() - totalBytesSent);
-		std::cout << sendBytes << std::endl;
 		if (sendBytes <= 0)
 		{
 			if (sendBytes == 0)
