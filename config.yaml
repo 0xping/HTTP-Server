@@ -23,7 +23,6 @@ server:
     /:
       allow_methods:
         - GET
-        - POST
       root: ./
       autoindex: on
 
@@ -73,6 +72,7 @@ server:
     /root:
       allow_methods:
         - GET
+        - POST
       root: ./root/
       autoindex: on
       index:
@@ -82,6 +82,7 @@ server:
     /:
       allow_methods:
         - GET
+        - POST
       root: ./root/
       autoindex: on
 

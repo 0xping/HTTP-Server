@@ -50,6 +50,8 @@ void ConfigParser::parse_server(std::ifstream& file){
 void ConfigParser::check_server(ServerConfig& server){
     if (server.ip.empty() || server.locations.empty())
         cerrAndExit("ERROR: there has to be at least one server! every server has to have a listen field and at least 1 location!", 1);
+    if (server.locations.find("/") == server.locations.end())
+        cerrAndExit("ERROR: default location '/' is mandatory!", 1);
 }
 
 void ConfigParser::check_leading_spaces(std::string& str, int n){
