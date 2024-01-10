@@ -25,3 +25,9 @@ bool allCharactersAllowed(const std::string& str, const std::string& allowedChar
     }
     return true; // All characters are in allowedChars
 }
+
+std::string toString(int n){
+    std::stringstream ss;
+    ss << n;
+    return ss.str();
+}

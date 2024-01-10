@@ -23,7 +23,7 @@ class ServerConfig {
         std::string                         body_size;
         std::map<std::string, Location>   locations;
         std::map<std::string, std::string>  error_pages;
-        std::vector<std::string> getErrorPage(std::string& errn_);
+        std::string getErrorPage(std::string& errn_);
         bool hasLocation(std::string& location);
         Location& getLocation(std::string& location);
 };

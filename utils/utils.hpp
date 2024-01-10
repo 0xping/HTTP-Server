@@ -28,6 +28,7 @@ bool isAllSpaces(std::string& str);
 void trim_spaces(std::string& str, bool both);
 bool isAllDigit(std::string &str);
 bool allCharactersAllowed(const std::string& str, const std::string& allowedChars);
+std::string toString(int n);
 
 std::string getFileExtention(const std::string& file_path);
 #endif

@@ -46,8 +46,12 @@ enum ClientStatus {
 class ClientHandler : public RequestParser {
 	private:
 		int epollFd;
-		// bool headersSent;
-		std::string postedFileName;
+
+		std::string postedFileName; // replaced with tmp files
+		
+		// to remove & close in destruction
+		std::vector<std::string> tmpFiles;
+		std::vector<int> fds;
 	public:
 		ClientStatus status;
 		Binary readingBuffer;
@@ -63,6 +67,28 @@ class ClientHandler : public RequestParser {
 		ClientHandler(int clientFd, int epollFd ,const  ServerConfig &serverConfig, const ClusterConfig &config);
 		void readyToReceive();
 		void readyToSend();
+
+
+	// send response
+	public:		
+		std::string file;
+		std::string statusCode;
+		std::string statusString;
+		std::string extraHeaders;
+		bool isCGI;		
+		
+		bool headersSent;
+
+		void setResponseParams(std::string statusCode, std::string statusString, std::string extraHeaders, std::string file, bool isCGI=false);
+
+
+		void SendResponse();
+		std::string generateHeaders();
+		std::string getExtension();
+		std::string getContentLength();
+		std::string getMimeType(std::string ext);
+
+		int offset;
 
 };
 
