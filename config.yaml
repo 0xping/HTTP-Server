@@ -23,6 +23,7 @@ server:
     /:
       allow_methods:
         - GET
+        - POST
       root: ./
       autoindex: on
 
