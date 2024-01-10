@@ -139,19 +139,19 @@ void Cluster::handleExistingConnection(int eventFd, uint32_t eventsData) {
 
 	ClientHandler& client = it->second;
 
-	if ((eventsData & EPOLLIN) && client.status == Receiving)
+	if (eventsData & EPOLLIN && client.status == Receiving)
 	{
 		std::cout << "ClientHandler: Client Receiving..." << std::endl;
 		client.readyToReceive();
 	}
-	else if ((eventsData & EPOLLOUT) && (client.status == Sending || client.status == Error))
+	else if (eventsData & EPOLLOUT && client.status == Sending)
 	{
 		std::cout << "ClientHandler: Client Sending..." << std::endl;
 		client.readyToSend();
 	}
-	else if (client.status == Closed)
+
+	if (client.status == Closed)
 	{
-		// ...
 		std::cout << "connection Closed Remove client from the Map" << std::endl;
 		epoll_ctl(epollFd, EPOLL_CTL_DEL, client.clientFd, NULL);
 		// struct epoll_event events;
