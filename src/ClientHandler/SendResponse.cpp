@@ -49,8 +49,8 @@ std::string ClientHandler::generateHeaders(){
 	re += "Content-Type: " + getMimeType(getExtension()) + "\r\n";		
 	re += "Content-Length: " + getContentLength() + "\r\n";
 	re += extraHeaders;
-	if (!isCGI)
-		re += "\r\n";
+	//if (!isCGI)
+	re += "\r\n";
 	return re;
 }
 

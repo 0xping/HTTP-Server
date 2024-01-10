@@ -21,7 +21,7 @@ server:
         - nigga
       cgi_path:
         - php: ./cgi-bin/php-cgi
-        - py: /usr/local/bin/python3
+        - py: /usr/bin/python3
 
     /:
       allow_methods:

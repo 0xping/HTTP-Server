@@ -20,6 +20,7 @@ void ClientHandler::execCGI(){
 			}
 		}
     	if (WIFEXITED(status)){
+			std::cout << WEXITSTATUS(status) << std::endl;
 			if (!WEXITSTATUS(status))
 				setResponseParams("200", "OK", "", cgioutput, true);
 			else
@@ -30,14 +31,16 @@ void ClientHandler::execCGI(){
     	
 	}
 	else{
-		int fd = open(cgioutput.c_str(), O_WRONLY | O_CREAT);
+		int fd = open(cgioutput.c_str(), O_RDWR | O_CREAT, 0777);
 		if (fd < 0)
-			exit(1);
+			exit(1);		
+
 		const char *args[] = {CGIpath.c_str(), fullLocation.c_str(), postedFileName.c_str(), NULL};
 		const char *env[] = {query.c_str(), NULL};
 		if (dup2(fd,1) == -1)
 			exit(1);
-		execve(fullLocation.c_str(), (char *const *)args, (char *const *)env);
+
+		execve(CGIpath.c_str(), (char *const *)args, (char *const *)env);
 		exit(1);
 	}
 }
