@@ -13,6 +13,7 @@ server:
     /root:
       allow_methods:
         - GET
+        - POST
       root: ./root/
       autoindex: off
       index:

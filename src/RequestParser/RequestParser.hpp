@@ -55,12 +55,12 @@ struct RequestMessage
 class RequestParser
 {
 	private:
-		ServerConfig serverConfig;
 		std::string fullLocation;
 		std::string query;
 	public:
+		ServerConfig serverConfig;
+
 		RequestParser();
-		std::string FileName;
 		RequestMessage message;
 		bool headersLoaded;
 		Location location;
@@ -69,6 +69,10 @@ class RequestParser
 		void parseRequest();
 		void parseUri(const std::string& uriStr);
 		std::string CGIpath;
+		bool isCGIfile;
+		bool isDir;
+
+		void checkPath();
 
 };
 

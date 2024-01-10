@@ -12,6 +12,7 @@ enum ErrorCode {
 	RequestURIToLong = 414,
 	MethodNotAllowed = 405,
 	InternalServerError = 500,
+	Forbidden = 403,
 	// Add more errors
 };
 

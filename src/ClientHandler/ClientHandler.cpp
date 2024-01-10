@@ -24,8 +24,10 @@ void ClientHandler::readyToReceive() {
 		if (headersLoaded)
 		{
 			std::cout << "Headers Loaded" << std::endl;
-			if (message.headers.find("Host") != message.headers.end())
-				serverConfig = clusterConfig.getServerConfig(serverConfig.ip, serverConfig.port, message.headers["Host"]);
+			if (message.headers.find("Host") != message.headers.end()){
+				serverConfig = clusterConfig.getServerConfig(serverConfig.ip, serverConfig.port, message.headers["Host"]);;
+				RequestParser::serverConfig = serverConfig;
+			}
 			else
 				throw HttpError(BadRequest, "Bad Request");
 			parseRequest();
@@ -33,7 +35,7 @@ void ClientHandler::readyToReceive() {
 		}
 		// check and call the method DELETE or POST <No GET>
 		// to send a request form a method , just append to sendingBuffer
-		status = Sending;
+		// status = Sending;
 	}
 	catch (const HttpError& e)
 	{
@@ -123,7 +125,7 @@ void ClientHandler::sendToSocket()
 			if (sendBytes == -1)
 			{
 				status = Error;
-				std::cerr << "Error receiving data: " << strerror(errno) << "\n";
+				std::cerr << "Error sending data: " << strerror(errno) << "\n";
 				throw HttpError(InternalServerError, "Internal Server Error");
 			}
 			return ;

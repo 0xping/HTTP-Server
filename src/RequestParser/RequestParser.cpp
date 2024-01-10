@@ -3,6 +3,7 @@
 RequestParser::RequestParser()
 {
 	this->headersLoaded = false;
+	this->isCGIfile = false;
 }
 
 
@@ -67,7 +68,7 @@ void RequestParser::parseRequest()
 		throw HttpError(BadRequest, "Bad Request");
 
 	if (message.uri.fullUri.size() > 2048)
-		throw HttpError(RequestURIToLong, "Request-URI To Long");
+		throw HttpError(RequestURIToLong, "Request-URI Too Long");
 
 	//413 error
 
@@ -79,8 +80,6 @@ void RequestParser::parseRequest()
 	else
 		throw HttpError(NotFound, "Not Found");
 
-	// proccessLocation();
-	// checkPath();
 }
 
 
@@ -94,52 +93,27 @@ void RequestParser::parseUri(const std::string& uriStr) {
 	if (queryPos != std::string::npos) {
 		uri.query = uriStr.substr(queryPos + 1);
 	}
-
 	location = serverConfig.getLocation(message.uri.path);
 	fullLocation = location.root + message.uri.path;
-	std::string fileExtention = getFileExtention("dsa");
+	checkPath();
+	std::string fileExtention = getFileExtention(message.uri.path);
 	if (location.cgi_path.find(fileExtention) != location.cgi_path.end()){
 		CGIpath = location.cgi_path[fileExtention];
+		isCGIfile = true;
 	}
 }
 
+void RequestParser::checkPath()
+{
+	struct stat fileInfo;
 
-// void RequestParser::proccessLocation()
-// {
-
-// 	std::string* splitted = split(message.uri, '?');
-// 	std::vector<std::string> strVec = strSplit(splitted[0], "/");
-
-// 	location = serverConfig.getLocation(message.uri);
-// 	query = splitted[1];
-// 	full_location = location.root + &(splitted[0][1]);
-// 	isCGIpath = isCGIFile();
-
-// 	delete[] splitted;
-// }
-
-
-// void RequestParser::checkPath()
-// {
-// 	struct stat fileInfo;
-
-// 	std::cout << full_location << std::endl;
-// 	if (access(full_location.c_str(), F_OK) == 0){
-// 		stat(full_location.c_str(), &fileInfo);
-// 		if (S_ISDIR(fileInfo.st_mode))
-// 			isDir = 1;
-// 		else if (access(full_location.c_str(), R_OK) != 0)
-// 			SendResponse("403", std::map<std::string, std::string>(), "");
-// 	}
-// 	else
-// 		SendResponse("404", std::map<std::string, std::string>(), "");
-// }
-
-// bool RequestParser::isCGIFile(){
-// 	std::string ext = getFileExtention();
-// 	if (location.cgi_path.find(ext) != location.cgi_path.end()){
-// 		cgi_path = location.cgi_path[ext];
-// 		return 1;
-// 	}
-// 	return 0;
-// }
+	if (access(fullLocation.c_str(), F_OK) == 0){
+		stat(fullLocation.c_str(), &fileInfo);
+		if (S_ISDIR(fileInfo.st_mode))
+			isDir = 1;
+		else if (access(fullLocation.c_str(), R_OK) != 0)
+			throw HttpError(Forbidden, "Forbidden");
+	}
+	else
+		throw HttpError(NotFound, "Not Found");
+}
