@@ -95,7 +95,9 @@ void RequestParser::parseUri(const std::string& uriStr) {
 	}
 	location = serverConfig.getLocation(message.uri.path);
 	fullLocation = location.root + message.uri.path;
-	checkPath();
+
+	checkPath();	
+
 	std::string fileExtention = getFileExtention(message.uri.path);
 	if (location.cgi_path.find(fileExtention) != location.cgi_path.end()){
 		CGIpath = location.cgi_path[fileExtention];
