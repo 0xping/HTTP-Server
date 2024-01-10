@@ -34,7 +34,7 @@ void ClientHandler::readyToReceive() {
 		}
 		// check and call the method DELETE or POST <No GET>
 		// to send a request form a method , just append to sendingBuffer
-		status = Sending;
+		// status = Sending;
 	}
 	catch (const HttpError& e)
 	{

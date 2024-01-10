@@ -146,7 +146,7 @@ void Cluster::handleExistingConnection(int eventFd, uint32_t eventsData) {
 	}
 	else if ((eventsData & EPOLLOUT) && (client.status == Sending || client.status == Error))
 	{
-		std::cout << "ClientHandler: Client Sending...11" << std::endl;
+		std::cout << "ClientHandler: Client Sending..." << std::endl;
 		client.readyToSend();
 	}
 	else if (client.status == Closed)
