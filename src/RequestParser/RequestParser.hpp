@@ -54,10 +54,10 @@ struct RequestMessage
 
 class RequestParser
 {
-	private:
+	
+	public:
 		std::string fullLocation;
 		std::string query;
-	public:
 		ServerConfig serverConfig;
 
 		RequestParser();
