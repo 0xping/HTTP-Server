@@ -1,4 +1,5 @@
 #.gitignore c++ template
+log
 
 # Prerequisites
 *.d
