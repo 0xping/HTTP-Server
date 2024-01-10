@@ -97,22 +97,11 @@ void ClientHandler::sendToSocket()
 	size_t totalBytesSent = 0;
 	while (totalBytesSent < sendingBuffer.toStr().size())
 	{
-		// ssize_t v = ::write(open("log", O_RDWR | O_CREAT | O_APPEND, 0777), sendingBuffer.toStr().c_str() + totalBytesSent, sendingBuffer.toStr().size() - totalBytesSent);
-		// v++;
+		//write(open("log", O_RDWR | O_CREAT | O_APPEND, 0777), sendingBuffer.toStr().c_str() + totalBytesSent, sendingBuffer.toStr().size() - totalBytesSent);
 		ssize_t sendBytes = ::write(this->clientFd, sendingBuffer.toStr().c_str() + totalBytesSent, sendingBuffer.toStr().size() - totalBytesSent);
 		if (sendBytes <= 0)
 		{
-			if (sendBytes == 0)
-			{
-				std::cout << "Connection closed by client\n";
-					status = Closed;
-			}
-			if (sendBytes == -1)
-			{
-				status = Error;
-				std::cerr << "Error sending data: " << strerror(errno) << "\n";
-				throw HttpError(InternalServerError, "Internal Server Error");
-			}
+			status = Closed;
 			return ;
 		}
 		totalBytesSent += sendBytes;
