@@ -18,11 +18,9 @@ void ClientHandler::SendResponse(){
 		headersSent = 1;
 	}
 	else{		
-		std::ifstream fileToSend;        
+		//protect		
+		std::ifstream fileToSend(file.c_str(), std::ios::binary);        
 		char buffer[BUFFER_SIZE + 1] =  {0};        
-		
-		//protect
-		fileToSend.open(file.c_str(), std::ios::binary);
 
 		fileToSend.seekg(offset);
 		fileToSend.read(buffer, BUFFER_SIZE);
@@ -109,4 +107,5 @@ void ClientHandler::setResponseParams(std::string statusCode, std::string status
     this->extraHeaders = extraHeaders;
 	this->statusString = statusString;
     this->isCGI = isCGI;
+	status = Sending;
 }

@@ -75,12 +75,11 @@ class ClientHandler : public RequestParser {
 		std::string statusCode;
 		std::string statusString;
 		std::string extraHeaders;
-		bool isCGI;		
+		bool isCGI;		// is cgi sending
 		
 		bool headersSent;
 
 		void setResponseParams(std::string statusCode, std::string statusString, std::string extraHeaders, std::string file, bool isCGI=false);
-
 
 		void SendResponse();
 		std::string generateHeaders();
@@ -88,7 +87,12 @@ class ClientHandler : public RequestParser {
 		std::string getContentLength();
 		std::string getMimeType(std::string ext);
 
-		int offset;
+		int offset; // offset to continue reading file
+
+
+
+		// GET METHOD
+		void GetMethod();
 
 };
 

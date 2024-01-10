@@ -159,7 +159,6 @@ void Cluster::handleExistingConnection(int eventFd, uint32_t eventsData) {
 		close(client.clientFd);
 		clientsZone.erase(it);
 	}
-	sleep(2);
 }
 
 void Cluster::acceptConnections(int serverSocket) {

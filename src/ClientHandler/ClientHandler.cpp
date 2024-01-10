@@ -34,7 +34,7 @@ void ClientHandler::readyToReceive() {
 				throw HttpError(BadRequest, "Bad Request");
 			parseRequest();
 			if (message.method == "GET")
-				status = Sending; // call get function
+				GetMethod();
 			setResponseParams("200", "OK", "Nigga: Balls\r\n", "index.html");
 		}
 		// check and call the method DELETE or POST <No GET>
@@ -43,7 +43,7 @@ void ClientHandler::readyToReceive() {
 	}
 	catch (const HttpError& e)
 	{
-		status = Sending; // status = Error;
+		// status = Sending; // status = Error;
 		
 		std::cerr << "HTTP Error (" << e.getErrorCode() << "): " << e.what() << std::endl;
 		setResponseParams(toString(e.getErrorCode()), e.what(), "", "", false);
@@ -59,7 +59,7 @@ void ClientHandler::readyToSend() {
 	}
 	catch (const HttpError& e)
 	{
-		status = Sending; // status = Error;
+		// status = Sending; // status = Error;
 		int errorCode = static_cast<int>(e.getErrorCode());
 		std::cerr << "HTTP Error (" << errorCode << "): " << e.what() << std::endl;
 		setResponseParams(toString(e.getErrorCode()), e.what(), "", "", false); // check if send failed
