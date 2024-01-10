@@ -35,7 +35,6 @@ void ClientHandler::readyToReceive() {
 			parseRequest();
 			if (message.method == "GET")
 				GetMethod();
-			setResponseParams("200", "OK", "Nigga: Balls\r\n", "index.html");
 		}
 		// check and call the method DELETE or POST <No GET>
 		// to send a request form a method , just append to sendingBuffer

@@ -2,11 +2,74 @@
 
 void ClientHandler::GetMethod(){
     if (isDir)
-        std::cout << std::endl;// process index & autoindex
+    {
+        if (!location.index.empty()){
+            if (GetIndex())
+                return ;
+        }
+        if (!location.autoindex)
+            setResponseParams("403", "Forbidden", "", "");
+        else
+            GetAutoIndex();
+    }
     else{
         if (isCGIfile)
-            std::cout << std::endl;// call cgi
+            execCGI();
         else
             setResponseParams("200", "OK", "", fullLocation); // pass file to send
     }
+}
+
+int ClientHandler::GetIndex(){
+    std::vector<std::string>::iterator it = location.index.begin();
+    for (;it != location.index.end(); it++)
+    {
+        if (!access(it->c_str(), R_OK)){
+            setResponseParams("200", "OK", "", *it);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void ClientHandler::GetAutoIndex(){
+    char nameBuffer[L_tmpnam] = {0};
+    std::string AIfile = std::tmpnam(nameBuffer) + std::string(".html");
+    std::ofstream autoindexFile(AIfile.c_str());
+
+    tmpFiles.push_back(AIfile);
+    if (!autoindexFile.is_open())
+    {
+        setResponseParams("500", "Internal Server Error", "", "");
+        return ;
+    }
+    // protect
+    
+    DIR *dir = opendir(fullLocation.c_str());
+
+    if (dir == NULL){
+        setResponseParams("500", "Internal Server Error", "", "");
+        autoindexFile.close();
+        return ;
+    }
+
+    // html header
+    autoindexFile << "<html>\n<head>\n<title>Autoindex</title>\n</head>\n<body>\n";
+    autoindexFile << "<h1>Autoindex</h1>\n<ul>\n";
+
+    // read directory
+    struct dirent *entry;
+
+    while ((entry = readdir(dir)) != NULL){
+        if (entry->d_name[0] != '.'){
+            // write a list item with a link to the file
+            autoindexFile << "<li><a href=\"" << entry->d_name << "\">" << entry->d_name << "</a></li>\n";
+        }
+    }
+
+    // close html file
+    autoindexFile << "</ul>\n</body>\n</html>";
+    autoindexFile.close();
+    setResponseParams("200", "OK", "", AIfile);
+    closedir(dir);
 }

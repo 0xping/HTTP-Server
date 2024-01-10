@@ -15,15 +15,18 @@ server:
         - GET
         - POST
       root: ./root/
-      autoindex: off
+      autoindex: on
       index:
         - test
         - nigga
+      cgi_path:
+        - php: ./cgi-bin/php-cgi
+        - py: /usr/local/bin/python3
 
     /:
       allow_methods:
         - GET
-      root: ./
+      root: ./root/
       autoindex: on
 
     /ahmed:

@@ -94,7 +94,7 @@ void RequestParser::parseUri(const std::string& uriStr) {
 		uri.query = uriStr.substr(queryPos + 1);
 	}
 	location = serverConfig.getLocation(message.uri.path);
-	fullLocation = location.root + message.uri.path;
+	fullLocation = location.root + &(message.uri.path[1]);
 
 	checkPath();	
 
@@ -108,7 +108,6 @@ void RequestParser::parseUri(const std::string& uriStr) {
 void RequestParser::checkPath()
 {
 	struct stat fileInfo;
-
 	if (access(fullLocation.c_str(), F_OK) == 0){
 		stat(fullLocation.c_str(), &fileInfo);
 		if (S_ISDIR(fileInfo.st_mode))

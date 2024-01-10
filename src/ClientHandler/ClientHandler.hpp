@@ -16,6 +16,7 @@
 #include <arpa/inet.h>
 #include <iostream>
 #include <unistd.h>
+#include <dirent.h>
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include <cerrno>
@@ -93,6 +94,12 @@ class ClientHandler : public RequestParser {
 
 		// GET METHOD
 		void GetMethod();
+		int GetIndex();
+		void GetAutoIndex();
+
+
+		// CGI
+		void execCGI();
 
 };
 

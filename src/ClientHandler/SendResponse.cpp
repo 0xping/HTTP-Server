@@ -2,7 +2,6 @@
 
 // response
 void ClientHandler::SendResponse(){
-
 	if (!headersSent){
 		if (file.empty()){
             std::string errorPage = serverConfig.getErrorPage(statusCode);
@@ -18,7 +17,7 @@ void ClientHandler::SendResponse(){
 		headersSent = 1;
 	}
 	else{		
-		//protect		
+		//protect	
 		std::ifstream fileToSend(file.c_str(), std::ios::binary);        
 		char buffer[BUFFER_SIZE + 1] =  {0};        
 
@@ -27,13 +26,16 @@ void ClientHandler::SendResponse(){
 		offset = fileToSend.tellg();
 		// check g count, protect
 		int readLen = fileToSend.gcount();	
-		
+		std::cout << file << std::endl;
 		sendingBuffer.append((unsigned const char*)buffer, readLen);
 		sendToSocket();
 
 		/// set status to Closed if done sending
 		if (!readLen)
+		{
+			sleep(2);
 			status = Closed;
+		}
 
 		fileToSend.close();
 	}
