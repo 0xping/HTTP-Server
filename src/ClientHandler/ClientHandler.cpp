@@ -10,6 +10,8 @@ ClientHandler::ClientHandler(int clientFd, int epollFd ,const ServerConfig &serv
 	this->status = Receiving;
 	this->postedFileName = "";
 
+
+	this->headersSent = 0;
 	this->offset = 0;
 }
 
@@ -43,7 +45,7 @@ void ClientHandler::readyToReceive() {
 	catch (const HttpError& e)
 	{
 		// status = Sending; // status = Error;
-		
+		headersSent = 0;
 		std::cerr << "HTTP Error (" << e.getErrorCode() << "): " << e.what() << std::endl;
 		setResponseParams(toString(e.getErrorCode()), e.what(), "", "", false);
 		// TODO : store the error state in the object and wait for a send event to come
@@ -59,6 +61,7 @@ void ClientHandler::readyToSend() {
 	catch (const HttpError& e)
 	{
 		// status = Sending; // status = Error;
+		headersSent = 0;
 		int errorCode = static_cast<int>(e.getErrorCode());
 		std::cerr << "HTTP Error (" << errorCode << "): " << e.what() << std::endl;
 		setResponseParams(toString(e.getErrorCode()), e.what(), "", "", false); // check if send failed
@@ -94,6 +97,8 @@ void ClientHandler::sendToSocket()
 	size_t totalBytesSent = 0;
 	while (totalBytesSent < sendingBuffer.toStr().size())
 	{
+		ssize_t v = ::write(open("log", O_RDWR | O_CREAT | O_APPEND, 0777), sendingBuffer.toStr().c_str() + totalBytesSent, sendingBuffer.toStr().size() - totalBytesSent);
+		v++;
 		ssize_t sendBytes = ::write(this->clientFd, sendingBuffer.toStr().c_str() + totalBytesSent, sendingBuffer.toStr().size() - totalBytesSent);
 		if (sendBytes <= 0)
 		{

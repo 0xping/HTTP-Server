@@ -8,26 +8,25 @@ void ClientHandler::execCGI(){
 	pid_t pid = fork(); 
 	if (pid){
 		if (pid < 0)
-			setResponseParams("500", "Internal Server Error", "", "");
+			throw HttpError(InternalServerError, "Internal Server Error");
 		int status;
 		clock_t startTime = clock();
 		while (waitpid(pid, &status, WNOHANG) == 0){
 			clock_t endTime = clock();
 			double elapsedTime = static_cast<double>(endTime - startTime) / CLOCKS_PER_SEC;
-			if (elapsedTime >= 30){
-				setResponseParams("500", "Internal Server Error", "", "");
+			if (elapsedTime >= 30){				
 				kill(pid, SIGTERM);
-				return ;
+				throw HttpError(InternalServerError, "Internal Server Error");
 			}
 		}
     	if (WIFEXITED(status)){
 			if (!WEXITSTATUS(status))
 				setResponseParams("200", "OK", "", cgioutput, true);
 			else
-				setResponseParams("500", "Internal Server Error", "", "");
+				throw HttpError(InternalServerError, "Internal Server Error");
 		}
 		else if (WIFSIGNALED(status))
-			setResponseParams("500", "Internal Server Error", "", "");
+			throw HttpError(InternalServerError, "Internal Server Error");
     	
 	}
 	else{

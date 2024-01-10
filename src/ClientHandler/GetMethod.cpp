@@ -8,7 +8,7 @@ void ClientHandler::GetMethod(){
                 return ;
         }
         if (!location.autoindex)
-            setResponseParams("403", "Forbidden", "", "");
+            throw HttpError(Forbidden, "Forbidden");
         else
             GetAutoIndex();
     }
@@ -39,18 +39,14 @@ void ClientHandler::GetAutoIndex(){
 
     tmpFiles.push_back(AIfile);
     if (!autoindexFile.is_open())
-    {
-        setResponseParams("500", "Internal Server Error", "", "");
-        return ;
-    }
+        throw HttpError(InternalServerError, "Internal Server Error");
     // protect
     
     DIR *dir = opendir(fullLocation.c_str());
 
     if (dir == NULL){
-        setResponseParams("500", "Internal Server Error", "", "");
         autoindexFile.close();
-        return ;
+        throw HttpError(InternalServerError, "Internal Server Error");
     }
 
     // html header

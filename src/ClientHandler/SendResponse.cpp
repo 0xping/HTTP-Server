@@ -26,14 +26,15 @@ void ClientHandler::SendResponse(){
 		offset = fileToSend.tellg();
 		// check g count, protect
 		int readLen = fileToSend.gcount();	
-		std::cout << file << std::endl;
+	
 		sendingBuffer.append((unsigned const char*)buffer, readLen);
 		sendToSocket();
 
 		/// set status to Closed if done sending
 		if (!readLen)
 		{
-			sleep(2);
+			//sleep(2);
+			headersSent = 0;
 			status = Closed;
 		}
 
@@ -44,7 +45,7 @@ void ClientHandler::SendResponse(){
 std::string ClientHandler::generateHeaders(){
 	std::string re;
 
-	re = "http/1.1 " + statusCode + " " + statusString + "\r\n";
+	re = "HTTP/1.1 " + statusCode + " " + statusString + "\r\n";
 	re += "Content-Type: " + getMimeType(getExtension()) + "\r\n";		
 	re += "Content-Length: " + getContentLength() + "\r\n";
 	re += extraHeaders;
