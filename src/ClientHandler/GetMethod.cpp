@@ -57,8 +57,11 @@ void ClientHandler::GetAutoIndex(){
 
     while ((entry = readdir(dir)) != NULL){
         if (entry->d_name[0] != '.'){
+            std::string tmpName = message.uri.path + "/";
+            if (message.uri.path == "/")
+                tmpName.resize(1);
             // write a list item with a link to the file
-            autoindexFile << "<li><a href=\"" << entry->d_name << "\">" << entry->d_name << "</a></li>\n";
+            autoindexFile << "<li><a href=\"" << tmpName + entry->d_name << "\">" << entry->d_name << "</a></li>\n";
         }
     }
 

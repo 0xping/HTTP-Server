@@ -19,7 +19,6 @@ void ClientHandler::execCGI(){
 			}
 		}
     	if (WIFEXITED(status)){
-			std::cout << WEXITSTATUS(status) << std::endl;
 			if (!WEXITSTATUS(status))
 				setResponseParams("200", "OK", "", cgioutput, true);
 			else
