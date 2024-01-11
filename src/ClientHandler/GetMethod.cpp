@@ -70,3 +70,8 @@ void ClientHandler::GetAutoIndex(){
     setResponseParams("200", "OK", "", AIfile);
     closedir(dir);
 }
+
+void ClientHandler::redirect(){
+    std::cout << "here--" << std::endl;
+    setResponseParams("302", "Moved Permanently", "Location: " + location._return + "\r\n", "");
+}

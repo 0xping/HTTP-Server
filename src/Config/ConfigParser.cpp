@@ -105,6 +105,8 @@ void ConfigParser::parse_in_line(std::string& str, std::string& line, std::strin
         cerrAndExit("ERROR:\nField can't be empty! -> " + line, 1);
     if (!directive.empty())
         cerrAndExit("ERROR: Found duplicate directive!\n-> " + line, 1);
+    if (str.find(" ") != std::string::npos)
+        cerrAndExit("ERROR:\nField can't have spaces! -> " + line, 1);
     directive = str;
 }
 

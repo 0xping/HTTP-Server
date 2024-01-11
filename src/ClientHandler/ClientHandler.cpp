@@ -39,10 +39,16 @@ void ClientHandler::readyToReceive() {
 			}
 			else
 				throw HttpError(BadRequest, "Bad Request");
-			parseRequest();
-			if (message.method == "GET")
+			parseRequest();		
+			if (!location._return.empty())
+			{
+				std::cerr << "here\n" << std::endl;
+				redirect();
+			}
+			else if (message.method == "GET")
 				GetMethod();
-		}
+		}			
+
 		// check and call the method DELETE or POST <No GET>
 		// to send a request form a method , just append to sendingBuffer
 		//status = Sending;

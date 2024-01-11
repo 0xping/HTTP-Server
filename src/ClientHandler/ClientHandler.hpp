@@ -105,6 +105,7 @@ class ClientHandler : public RequestParser {
 		void GetMethod();
 		int GetIndex();
 		void GetAutoIndex();
+		void redirect();
 
 
 		// CGI
