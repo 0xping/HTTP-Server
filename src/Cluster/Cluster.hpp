@@ -27,6 +27,11 @@
 #include "../Server/Server.hpp"
 #include "../Config/ConfigParser.hpp"
 
+typedef struct Connection
+{
+    int sockfd;
+    std::time_t lastActivity;
+};
 
 class Cluster
 {
@@ -35,7 +40,7 @@ class Cluster
 		std::vector <Server*> servers;
 		int epollFd;
 		ClusterConfig config;
-
+		std::vector<struct Connection> activeClients;
 	public:
 		/**/
 

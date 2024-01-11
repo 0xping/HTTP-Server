@@ -110,8 +110,13 @@ void Cluster::eventLoop() {
 			std::cerr << "Error in epoll_wait: " << strerror(errno) << "\n";
 			break;
 		}
-
 		handleEvents(events, numEvents);
+		std::time_t currentTime = std::time(nullptr);
+		for (size_t i = 0; i < this->activeClients.size(); i++)
+		{
+			if (currentTime - activeClients[i].lastActivity > 5)
+				
+		}
 	}
 }
 

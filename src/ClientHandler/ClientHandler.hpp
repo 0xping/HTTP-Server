@@ -41,11 +41,6 @@ enum ClientStatus {
 	Closed, // connection closed
 };
 
-struct Connection {
-    int sockfd;
-    std::time_t lastActivity;
-};
-
 class ClientHandler : public RequestParser {
 	private:
 		int epollFd;
