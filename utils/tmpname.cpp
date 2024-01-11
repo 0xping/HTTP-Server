@@ -6,7 +6,7 @@ bool fileExists(const std::string& name)
     return file.good();
 }
 
-std::string generateUniqueFileName(const std::string& directory = "/tmp", const std::string& extension = "")
+std::string generateUniqueFileName(const std::string& directory, const std::string& extension)
 {
     char tmpname[100];
     std::ostringstream ss;

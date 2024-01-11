@@ -32,7 +32,7 @@ void trim_spaces(std::string& str, bool both);
 bool isAllDigit(std::string &str);
 bool allCharactersAllowed(const std::string& str, const std::string& allowedChars);
 std::string toString(int n);
-std::string generateUniqueFileName(const std::string& directory, const std::string& extension);
+std::string generateUniqueFileName(const std::string& directory = "/tmp", const std::string& extension = "");
 std::string getFileExtention(const std::string& file_path);
 
 bool isValidHex(const std::string& hex, unsigned int &size);

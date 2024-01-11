@@ -1,8 +1,7 @@
 #include "ClientHandler.hpp"
 
 void ClientHandler::execCGI(){
-    char nameBuffer[L_tmpnam] = {0};
-	std::string cgioutput = std::tmpnam(nameBuffer);
+	std::string cgioutput = generateUniqueFileName();
     tmpFiles.push_back(cgioutput);
 	
 	pid_t pid = fork(); 

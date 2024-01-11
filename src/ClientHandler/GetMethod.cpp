@@ -33,8 +33,7 @@ int ClientHandler::GetIndex(){
 }
 
 void ClientHandler::GetAutoIndex(){
-    char nameBuffer[L_tmpnam] = {0};
-    std::string AIfile = std::tmpnam(nameBuffer) + std::string(".html");
+    std::string AIfile = generateUniqueFileName("/tmp", ".html");
     std::ofstream autoindexFile(AIfile.c_str());
 
     tmpFiles.push_back(AIfile);
