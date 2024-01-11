@@ -90,7 +90,8 @@ class ClientHandler : public RequestParser {
 
 		int offset; // offset to continue reading file
 
-
+		// POST METHOD
+		// void PostMethod();
 
 		// GET METHOD
 		void GetMethod();

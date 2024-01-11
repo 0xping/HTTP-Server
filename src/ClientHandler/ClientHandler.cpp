@@ -9,7 +9,7 @@ ClientHandler::ClientHandler(int clientFd, int epollFd ,const ServerConfig &serv
 	this->clusterConfig = clusterConfig;
 	this->status = Receiving;
 	this->postedFileName = "";
-
+	this->isDir = 0;
 
 	this->headersSent = 0;
 	this->offset = 0;
@@ -84,7 +84,7 @@ void ClientHandler::readFromSocket(int bufferSize) {
 		{
 			status = Error;
 			std::cerr << "Error receiving data: " << strerror(errno) << "\n";
-			throw HttpError(InternalServerError, "Internal Server Error");
+			throw HttpError(InternalServerError, "Internal Server Error Read");
 		}
 		return ;
 	}

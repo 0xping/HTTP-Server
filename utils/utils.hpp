@@ -15,6 +15,8 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <ctime>
+
 
 std::string strtrim(const std::string& str, const std::string& charsToTrim = " \t\n\r");
 void trim_spaces(std::string& str, bool both);
@@ -29,6 +31,6 @@ void trim_spaces(std::string& str, bool both);
 bool isAllDigit(std::string &str);
 bool allCharactersAllowed(const std::string& str, const std::string& allowedChars);
 std::string toString(int n);
-
+std::string generateUniqueFileName(const std::string& directory);
 std::string getFileExtention(const std::string& file_path);
 #endif

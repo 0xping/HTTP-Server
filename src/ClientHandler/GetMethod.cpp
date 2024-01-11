@@ -1,6 +1,7 @@
 #include "ClientHandler.hpp"
 
 void ClientHandler::GetMethod(){
+    std::cout << "isDir " << isDir << std::endl;
     if (isDir)
     {
         if (!location.index.empty()){
@@ -39,14 +40,14 @@ void ClientHandler::GetAutoIndex(){
 
     tmpFiles.push_back(AIfile);
     if (!autoindexFile.is_open())
-        throw HttpError(InternalServerError, "Internal Server Error");
+        throw HttpError(InternalServerError, "Internal Server Error GET1");
     // protect
     
     DIR *dir = opendir(fullLocation.c_str());
 
     if (dir == NULL){
         autoindexFile.close();
-        throw HttpError(InternalServerError, "Internal Server Error");
+        throw HttpError(InternalServerError, "Internal Server Error GET2");
     }
 
     // html header
