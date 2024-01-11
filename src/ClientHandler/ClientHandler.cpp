@@ -41,10 +41,7 @@ void ClientHandler::readyToReceive() {
 				throw HttpError(BadRequest, "Bad Request");
 			parseRequest();		
 			if (!location._return.empty())
-			{
-				std::cerr << "here\n" << std::endl;
 				redirect();
-			}
 			else if (message.method == "GET")
 				GetMethod();
 		}			
