@@ -42,7 +42,10 @@ enum ClientStatus {
 	Closed, // connection closed
 };
 
-
+struct Connection {
+    int sockfd;
+    std::time_t lastActivity;
+};
 
 class ClientHandler : public RequestParser {
 	private:
@@ -64,6 +67,9 @@ class ClientHandler : public RequestParser {
 	private:
 		void sendToSocket();
 		void readFromSocket(int bufferSize = BUFFER_SIZE);
+
+		//POST
+		unsigned int counter;
 	public :
 		ClientHandler(int clientFd, int epollFd ,const  ServerConfig &serverConfig, const ClusterConfig &config);
 		void readyToReceive();
@@ -87,12 +93,15 @@ class ClientHandler : public RequestParser {
 		std::string getExtension();
 		std::string getContentLength();
 		std::string getMimeType(std::string ext);
+		std::string getExtensionPost(std::string mimeType);
 
 		int offset; // offset to continue reading file
 
 		// POST METHOD
-		// void PostMethod();
-
+		void PostMethod();
+		void chunked_handler();
+		void regular_data_handler();
+		
 		// GET METHOD
 		void GetMethod();
 		int GetIndex();

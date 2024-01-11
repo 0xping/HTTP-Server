@@ -1,7 +1,6 @@
 #include "ClientHandler.hpp"
 
 void ClientHandler::GetMethod(){
-    std::cout << "isDir " << isDir << std::endl;
     if (isDir)
     {
         if (!location.index.empty()){

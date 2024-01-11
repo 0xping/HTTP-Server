@@ -103,6 +103,42 @@ std::string ClientHandler::getMimeType(std::string ext){
 	return "text/plain";
 }
 
+std::string ClientHandler::getExtensionPost(std::string mimeType){
+	std::map<std::string, std::string> mimeTypes;
+
+	mimeTypes["text/plain"] = ".txt";
+	mimeTypes["text/html"] = ".html";
+	mimeTypes["text/css"] = ".css";
+	mimeTypes["application/javascript"] = ".js";
+	mimeTypes["image/jpeg"] = ".jpg";
+	mimeTypes["image/webp"] = ".webp";
+	mimeTypes["image/png"] = ".png";
+	mimeTypes["image/gif"] = ".gif";
+	mimeTypes["application/pdf"] = ".pdf";
+	mimeTypes["application/msword"] = ".doc";
+	mimeTypes["application/xml"] = ".xml";
+	mimeTypes["application/json"] = ".json";
+	mimeTypes["audio/mpeg"] = ".mp3";
+	mimeTypes["text/csv"] = ".csv";
+	mimeTypes["application/zip"] = ".zip";
+	mimeTypes["application/x-tar"] = ".tar";
+	mimeTypes["video/mp4"] = ".mp4";
+	mimeTypes["audio/ogg"] = ".ogg";
+	mimeTypes["image/svg+xml"] = ".svg";
+	mimeTypes["application/vnd.ms-excel"] = ".xls";
+	mimeTypes["application/vnd.ms-powerpoint"] = ".ppt";
+	mimeTypes["image/x-icon"] = ".ico";
+	mimeTypes["font/woff"] = ".woff";
+	mimeTypes["video/mpeg"] = ".mpg";
+
+
+
+	std::map<std::string,std::string>::iterator it = mimeTypes.find(mimeType);
+	if (it != mimeTypes.end())
+		return it->second;
+	return ".tmp";
+}
+
 void ClientHandler::setResponseParams(std::string statusCode, std::string statusString, std::string extraHeaders, std::string file, bool isCGI){
 	this->file = file;
 	this->statusCode = statusCode;

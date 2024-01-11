@@ -6,7 +6,7 @@ bool fileExists(const std::string& name)
     return file.good();
 }
 
-std::string generateUniqueFileName(const std::string& directory = "/tmp")
+std::string generateUniqueFileName(const std::string& directory = "/tmp", const std::string& extension = "")
 {
     char tmpname[100];
     std::ostringstream ss;
@@ -22,7 +22,7 @@ std::string generateUniqueFileName(const std::string& directory = "/tmp")
         std::string rand_int;
         std::strftime(tmpname, sizeof(tmpname), "%Y%m%d%H%M%S", localTime);
         iter++;
-    } while (fileExists(directory + '/' + std::string(tmpname) + ss.str()));
+    } while (fileExists(directory + '/' + std::string(tmpname) + ss.str() + extension));
     
-    return directory + '/' + std::string(tmpname) + ss.str();
+    return directory + '/' + std::string(tmpname) + ss.str() + extension;
 }

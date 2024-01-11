@@ -10,9 +10,9 @@ ClientHandler::ClientHandler(int clientFd, int epollFd ,const ServerConfig &serv
 	this->status = Receiving;
 	this->postedFileName = "";
 	this->isDir = 0;
-
 	this->headersSent = 0;
 	this->offset = 0;
+	this->counter = 0;
 }
 
 

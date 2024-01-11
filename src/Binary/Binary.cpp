@@ -58,3 +58,14 @@ void Binary::erase(size_t start, size_t length) {
 }
 
 size_t Binary::size() {return data.size();}
+
+
+
+// int main(int argc, char const *argv[])
+// {	
+// 	const unsigned char s[11] = "0123456789";
+// 	const unsigned char *str = s;
+// 	Binary b(str, 10);
+// 	std::cout << b.find("23");
+// 	return 0;
+// }
