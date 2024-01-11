@@ -5,33 +5,15 @@ void ClientHandler::execCGI(){
     tmpFiles.push_back(cgioutput);
 	
 	pid_t pid = fork(); 
-	if (pid){
-		int status;
-		
+	if (pid){	
 		if (pid < 0)
 			throw HttpError(InternalServerError, "Internal Server Error");
-		
-		clock_t startTime = clock();
 
-		while (waitpid(pid, &status, WNOHANG) == 0){
-			clock_t endTime = clock();
-
-			double elapsedTime = static_cast<double>(endTime - startTime) / CLOCKS_PER_SEC;
-			if (elapsedTime >= 30){				
-				kill(pid, SIGTERM);
-				throw HttpError(InternalServerError, "Internal Server Error");
-			}
-		}
-
-    	if (WIFEXITED(status)){
-			if (!WEXITSTATUS(status))
-				setResponseParams("200", "OK", "", cgioutput, true);
-			else
-				throw HttpError(InternalServerError, "Internal Server Error");
-		}
-		else if (WIFSIGNALED(status))
-			throw HttpError(InternalServerError, "Internal Server Error");
-    	
+		this->CGIpid = pid;
+		this->CGIoutput = cgioutput;
+		this->monitorCGI = 1;
+		this->CGIstartTime = std::time(0);
+		status = Sending;
 	}
 	else{
 		if (!std::freopen(cgioutput.c_str(), "w+", stdout))
@@ -42,5 +24,29 @@ void ClientHandler::execCGI(){
 
 		execve(CGIpath.c_str(), (char *const *)args, (char *const *)env);
 		std::exit(1);
+	}
+}
+
+void ClientHandler::checkCGI(){
+	int status;
+
+	if (waitpid(CGIpid, &status, WNOHANG) == 0){
+		std::time_t endTime = std::time(0);
+		int elapsedTime = CGIstartTime - endTime;
+		if (elapsedTime > 30){				
+			kill(CGIpid, SIGTERM);
+			throw HttpError(InternalServerError, "Internal Server Error");
+		}
+	}
+	else{
+		monitorCGI = 0;
+    	if (WIFEXITED(status)){
+			if (!WEXITSTATUS(status))
+				setResponseParams("200", "OK", "", CGIoutput, true);
+			else
+				throw HttpError(InternalServerError, "Internal Server Error");
+		}
+		else if (WIFSIGNALED(status))
+			throw HttpError(InternalServerError, "Internal Server Error");
 	}
 }

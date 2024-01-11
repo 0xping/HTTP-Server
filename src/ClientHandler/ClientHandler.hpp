@@ -108,7 +108,12 @@ class ClientHandler : public RequestParser {
 
 
 		// CGI
+		std::string CGIoutput;
+		bool monitorCGI;
+		pid_t CGIpid;
+		std::time_t CGIstartTime;
 		void execCGI();
+		void checkCGI();
 
 };
 

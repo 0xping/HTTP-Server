@@ -8,11 +8,16 @@ ClientHandler::ClientHandler(int clientFd, int epollFd ,const ServerConfig &serv
 	this->serverConfig = serverConfig;
 	this->clusterConfig = clusterConfig;
 	this->status = Receiving;
-	this->postedFileName = "";
+
+	this->counter = 0;
 	this->isDir = 0;
+	this->isCGIfile = 0;
 	this->headersSent = 0;
 	this->offset = 0;
-	this->counter = 0;
+
+	// cgi 
+	this->monitorCGI = 0;
+
 }
 
 
@@ -56,7 +61,10 @@ void ClientHandler::readyToSend() {
 	// Client ready to send data
 	try
 	{
-		SendResponse();
+		if (monitorCGI)
+			checkCGI();
+		else
+			SendResponse();
 	}
 	catch (const HttpError& e)
 	{
