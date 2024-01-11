@@ -14,7 +14,6 @@
 #include <functional>
 #include <stdexcept>
 #include <arpa/inet.h>
-#include <iostream>
 #include <unistd.h>
 #include <dirent.h>
 #include <sys/socket.h>

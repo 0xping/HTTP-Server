@@ -19,19 +19,21 @@ void ClientHandler::SendResponse(){
 	else{
 		//protect
 		std::ifstream fileToSend(file.c_str(), std::ios::binary);
+		if (!fileToSend.is_open())
+			throw HttpError(InternalServerError, "Internal Server Error");
 		char buffer[BUFFER_SIZE + 1] =  {0};
 
 		fileToSend.seekg(offset);
 		fileToSend.read(buffer, BUFFER_SIZE);
+
 		offset = fileToSend.tellg();
-		// check g count, protect
 		int readLen = fileToSend.gcount();
 
 		sendingBuffer.append((unsigned const char*)buffer, readLen);
 		sendToSocket();
 
 		/// set status to Closed if done sending
-		if (!readLen)
+		if (fileToSend.eof())
 		{
 			headersSent = 0;
 			status = Closed;
@@ -63,6 +65,8 @@ std::string ClientHandler::getExtension(){
 std::string ClientHandler::getContentLength(){
 	std::stringstream ss;
 	std::ifstream tmpifstream(file.c_str(), std::ios::binary);
+	if (!tmpifstream.is_open())
+		throw HttpError(InternalServerError, "Internal Server Error");
 	tmpifstream.seekg(0, std::ios::end);
 	ss << tmpifstream.tellg();
 	tmpifstream.close();

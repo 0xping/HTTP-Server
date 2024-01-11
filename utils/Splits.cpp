@@ -7,6 +7,8 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include "utils.hpp"
+
 
 std::vector<std::string> splitWithDelimiters(const std::string& str, const std::vector<std::string>& delimiters) {
 	std::vector<std::string> result;
@@ -44,7 +46,10 @@ std::vector<std::string> strSplit(const std::string& input, const std::string& d
 }
 
 std::string* split(std::string str, char sep){
-    std::string *re = new std::string[2];
+    std::string *re = new (std::nothrow) std::string[2];
+
+    if (!re)
+        cerrAndExit("Error: allocation failed!", 1);
 
     size_t i = 0;
     while (str[i] && str[i] != sep)

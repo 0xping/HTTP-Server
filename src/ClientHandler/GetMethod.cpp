@@ -3,7 +3,7 @@
 void ClientHandler::GetMethod(){
     if (isDir)
     {
-        if (!location.index.empty()){
+        if (!location.index.empty()){ 
             if (GetIndex())
                 return ;
         }
@@ -39,7 +39,6 @@ void ClientHandler::GetAutoIndex(){
     tmpFiles.push_back(AIfile);
     if (!autoindexFile.is_open())
         throw HttpError(InternalServerError, "Internal Server Error GET1");
-    // protect
     
     DIR *dir = opendir(fullLocation.c_str());
 

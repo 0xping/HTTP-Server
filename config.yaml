@@ -1,13 +1,9 @@
 server:
   listen: 127.0.0.1:8082
   max_client_body_size: 21448473648
-  error_page:
-    - 400: index.html
-    - 403: index.html
-    - 405: index.html
-    - 500: index.html
-    - 404: index.html
   server_name: example1.com
+  error_page:
+    - 400: root/index.html
 
   location:
     /root:
@@ -27,6 +23,9 @@ server:
       allow_methods:
         - GET
       root: ./root/
+      index:
+        - nigga
+        - small.mp4
       autoindex: on
 
     /ahmed:

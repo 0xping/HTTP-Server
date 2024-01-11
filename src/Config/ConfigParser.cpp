@@ -235,8 +235,6 @@ void ConfigParser::parse_location(std::string& line, std::ifstream& file, Server
 }
 
 void ConfigParser::check_location(Location& location, ServerConfig& server){
-    // if (!location.autoindex && location.index.empty())
-    //     cerrAndExit("ERROR: autoindex for " + location.path + " is off and no index was provided!", 1);
     if (location.root.empty())
         cerrAndExit("ERROR: root wasn't provided for " + location.path + "!", 1);
     if (location.root[location.root.length() - 1] != '/')

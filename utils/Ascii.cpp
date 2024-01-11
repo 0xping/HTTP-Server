@@ -26,6 +26,7 @@ bool allCharactersAllowed(const std::string& str, const std::string& allowedChar
     return true; // All characters are in allowedChars
 }
 
+// convert an int to a string
 std::string toString(int n){
     std::stringstream ss;
     ss << n;
