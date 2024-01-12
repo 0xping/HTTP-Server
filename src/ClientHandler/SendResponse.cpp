@@ -3,10 +3,9 @@
 // response
 void ClientHandler::SendResponse(){
 	if (!headersSent){
-		if (file.empty()){
-			std::string errorPage = serverConfig.getErrorPage(statusCode);
-			file = errorPage;
-		}
+		if (file.empty())
+			file = serverConfig.getErrorPage(statusCode);
+
 		std::string re;
 
 		re = generateHeaders();
@@ -38,7 +37,6 @@ void ClientHandler::SendResponse(){
 			headersSent = 0;
 			status = Closed;
 		}
-
 		fileToSend.close();
 	}
 }

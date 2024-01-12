@@ -239,8 +239,6 @@ void ConfigParser::parse_location(std::string& line, std::ifstream& file, Server
 void ConfigParser::check_location(Location& location, ServerConfig& server){
     if (location.root.empty())
         cerrAndExit("ERROR: root wasn't provided for " + location.path + "!", 1);
-    if (location.root[location.root.length() - 1] != '/')
-        cerrAndExit("ERROR: root has to be a directory -> " + location.path + "!", 1);
     if (server.locations.find(location.path) != server.locations.end())
         cerrAndExit("ERROR: found duplicate path in locations!\n-> " + location.path, 1);
 }

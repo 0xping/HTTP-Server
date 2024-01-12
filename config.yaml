@@ -18,7 +18,7 @@ server:
       allow_methods:
         - GET
         - POST
-      root: ./root/
+      root: ./root
       autoindex: on
       index:
         - test
@@ -31,7 +31,7 @@ server:
       allow_methods:
         - GET
         - DELETE
-      root: ./root/
+      root: ./root
       index:
         - nigga
         - small.mp4
@@ -41,13 +41,13 @@ server:
     /ahmed:
       allow_methods:
         - GET
-      root: ./root/ahmed/
+      root: ./root/ahmed
       autoindex: on
 
     /enja:
       allow_methods:
         - GET
-      root: ./root/enja/
+      root: ./root/enja
       autoindex: on
       cgi_path:
         - php: ./cgi-bin/php-cgi
@@ -57,7 +57,7 @@ server:
       allow_methods:
         - GET
         - POST
-      root: root/zbex/
+      root: root/zbex
       autoindex: on
       cgi_path:
         - php: ./cgi-bin/php-cgi
@@ -67,9 +67,9 @@ server:
       allow_methods:
         - GET
         - DELETE
-      root: ./root/testdelete/test/
+      root: ./root/testdelete/test
       autoindex: on
-      return: http://www.google.com/
+      return: http://www.google.com
 
 
 server:
@@ -92,7 +92,7 @@ server:
       allow_methods:
         - GET
         - POST
-      root: ./root/
+      root: ./root
       autoindex: on
       index:
         - test
@@ -102,19 +102,19 @@ server:
       allow_methods:
         - GET
         - POST
-      root: ./root/
+      root: ./root
       autoindex: on
 
     /ahmed:
       allow_methods:
         - GET
-      root: ./root/ahmed/
+      root: ./root/ahmed
       autoindex: on
 
     /enja:
       allow_methods:
         - GET
-      root: ./root/enja/
+      root: ./root/enja
       autoindex: on
       cgi_path:
         - php: ./cgi-bin/php-cgi
@@ -124,7 +124,7 @@ server:
       allow_methods:
         - GET
         - POST
-      root: root/zbex/
+      root: root/zbex
       autoindex: on
       cgi_path:
         - php: ./cgi-bin/php-cgi
@@ -134,6 +134,6 @@ server:
       allow_methods:
         - GET
         - DELETE
-      root: ./root/testdelete/test/
+      root: ./root/testdelete/test
       autoindex: on
       return: http://www.google.com/

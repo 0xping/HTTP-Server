@@ -96,7 +96,7 @@ bool RequestParser::parseUri(const std::string& uriStr) {
 		uri.query = uriStr.substr(queryPos + 1);
 	}
 	location = serverConfig.getLocation(message.uri.path);
-	fullLocation = location.root + &(message.uri.path[1]);
+	fullLocation = location.root + message.uri.path;
 	if (!location._return.empty())
 		return 1;
 	checkPath();	
