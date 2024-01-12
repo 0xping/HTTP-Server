@@ -69,6 +69,8 @@ class ClientHandler : public RequestParser {
 
 		//POST
 		unsigned int counter;
+		unsigned int chunkSize;
+		unsigned int contentLength;
 	public :
 		ClientHandler(int clientFd, int epollFd ,const  ServerConfig &serverConfig, const ClusterConfig &config);
 		~ClientHandler();
@@ -101,6 +103,7 @@ class ClientHandler : public RequestParser {
 		void PostMethod();
 		void chunked_handler();
 		void regular_data_handler();
+		void mutiple_part_handler();
 
 		// GET METHOD
 		void GetMethod();

@@ -35,6 +35,6 @@ std::string toString(int n);
 std::string generateUniqueFileName(const std::string& directory = "/tmp", const std::string& extension = "");
 std::string getFileExtention(const std::string& file_path);
 
-bool isValidHex(const std::string& hex, unsigned int &size);
+bool isValidBase(const std::string& number, unsigned int &size, const int base);
 
 #endif

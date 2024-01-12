@@ -1,19 +1,14 @@
 #include "utils.hpp"
 
-bool isValidHex(const std::string& hex, unsigned int &size)
+bool isValidBase(const std::string& number, unsigned int &size, const int base)
 {
-    for (size_t i = 0; i < hex.length(); i++)
-    {
-        if (!std::isxdigit(hex[i]))
-            return false;
-    }
-
     char *endPtr;
-    size = std::strtoul(hex.c_str(), &endPtr, 16);
+    size = std::strtoul(number.c_str(), &endPtr, base);
     if (!*endPtr || size == UINT_MAX)
         return false;
     return true;
 }
+
 
 // bool isValidInt(const std::string& contentLength, unsigned int counter)
 // {
