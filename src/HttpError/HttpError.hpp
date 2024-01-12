@@ -13,6 +13,7 @@ enum ErrorCode {
 	MethodNotAllowed = 405,
 	InternalServerError = 500,
 	Forbidden = 403,
+	RequestTimeOut = 408,
 	// Add more errors
 };
 
