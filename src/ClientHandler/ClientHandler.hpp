@@ -107,6 +107,9 @@ class ClientHandler : public RequestParser {
 		void GetAutoIndex();
 		void redirect();
 
+		// delete method
+		void DeleteMethod();
+
 
 		// CGI
 		std::string CGIoutput;

@@ -44,6 +44,8 @@ void ClientHandler::readyToReceive() {
 				redirect();
 			else if (message.method == "GET")
 				GetMethod();
+			else if (message.method == "DELETE")
+				DeleteMethod();
 		}			
 
 		// check and call the method DELETE or POST <No GET>
