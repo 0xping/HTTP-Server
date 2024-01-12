@@ -3,9 +3,9 @@
 void ClientHandler::execCGI(){
 	std::string cgioutput = generateUniqueFileName();
     tmpFiles.push_back(cgioutput);
-	
-	pid_t pid = fork(); 
-	if (pid){	
+
+	pid_t pid = fork();
+	if (pid){
 		if (pid < 0)
 			throw HttpError(InternalServerError, "Internal Server Error");
 
@@ -17,7 +17,7 @@ void ClientHandler::execCGI(){
 	}
 	else{
 		if (!std::freopen(cgioutput.c_str(), "w+", stdout))
-			std::exit(1);	
+			std::exit(1);
 
 		const char *args[] = {CGIpath.c_str(), fullLocation.c_str(), postedFileName.c_str(), NULL};
 		const char *env[] = {query.c_str(), NULL};
@@ -29,18 +29,18 @@ void ClientHandler::execCGI(){
 
 void ClientHandler::checkCGI(){
 	int status;
-
 	if (waitpid(CGIpid, &status, WNOHANG) == 0){
 		std::time_t endTime = std::time(0);
-		int elapsedTime = CGIstartTime - endTime;
-		if (elapsedTime > 30){				
+		int elapsedTime = endTime - CGIstartTime;
+		if (elapsedTime > 5){
 			kill(CGIpid, SIGTERM);
-			throw HttpError(InternalServerError, "Internal Server Error");
+			throw HttpError(RequestTimeOut, "Request Time Out");
 		}
 	}
-	else{
+	else
+	{
 		monitorCGI = 0;
-    	if (WIFEXITED(status)){
+		if (WIFEXITED(status)){
 			if (!WEXITSTATUS(status))
 				setResponseParams("200", "OK", "", CGIoutput, true);
 			else
