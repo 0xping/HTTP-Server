@@ -1,2 +1,5 @@
-print("\r\n")
+import time
+time.sleep(50)
+
+
 print("niggah")
