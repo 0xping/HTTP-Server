@@ -52,10 +52,8 @@ class ClientHandler : public RequestParser {
 		int epollFd;
 
 		std::string postedFileName; // replaced with tmp files
-		
 		// to remove & close in destruction
 		std::vector<std::string> tmpFiles;
-
 	public:
 		ClientStatus status;
 		Binary readingBuffer;
@@ -63,6 +61,7 @@ class ClientHandler : public RequestParser {
 		int clientFd;
 		ServerConfig serverConfig;
 		ClusterConfig clusterConfig;
+		std::time_t lastReceive;
 
 	private:
 		void sendToSocket();
@@ -78,13 +77,13 @@ class ClientHandler : public RequestParser {
 
 
 	// send response
-	public:		
+	public:
 		std::string file;
 		std::string statusCode;
 		std::string statusString;
 		std::string extraHeaders;
 		bool isCGI;		// is cgi sending
-		
+
 		bool headersSent;
 
 		void setResponseParams(std::string statusCode, std::string statusString, std::string extraHeaders, std::string file, bool isCGI=false);
@@ -102,7 +101,7 @@ class ClientHandler : public RequestParser {
 		void PostMethod();
 		void chunked_handler();
 		void regular_data_handler();
-		
+
 		// GET METHOD
 		void GetMethod();
 		int GetIndex();

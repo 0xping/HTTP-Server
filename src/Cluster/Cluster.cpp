@@ -42,7 +42,7 @@ void Cluster::cleanup()
 
 void Cluster::addSocketToEpoll(int fd) {
 	struct epoll_event event;
-	event.events = EPOLLIN | EPOLLOUT;
+	event.events = EPOLLIN | EPOLLOUT | EPOLLHUP | EPOLLERR;
 	event.data.fd = fd;
 
 	if (epoll_ctl(epollFd, EPOLL_CTL_ADD, fd, &event) == -1) {
@@ -102,11 +102,11 @@ void Cluster::eventLoop() {
 	const int maxEvents = 64;
 	struct epoll_event events[maxEvents];
 
-	while (true) {
-		//std::cout << clientsZone.size() << " ---\n\n";
-		// std::cout << "waiting..." << std::endl;
+	while (true )
+	{
 		int numEvents = epoll_wait(epollFd, events, maxEvents, -1);
-		if (numEvents == -1) {
+		if (numEvents == -1)// && errno != EINTR)
+		{
 			std::cerr << "Error in epoll_wait: " << strerror(errno) << "\n";
 			break;
 		}
@@ -118,44 +118,37 @@ void Cluster::eventLoop() {
 void Cluster::handleEvents(struct epoll_event* events, int numEvents) {
 	for (int i = 0; i < numEvents; ++i) {
 		int eventFd = events[i].data.fd;
-		if (isServerFd(eventFd)) {
+		if (isServerFd(eventFd))
 			acceptConnections(eventFd);
-		} else {
+		else
 			handleExistingConnection(eventFd, events[i].events);
-		}
 	}
 }
 
 
 void Cluster::handleExistingConnection(int eventFd, uint32_t eventsData) {
 	ServerConfig &serverConfig = getServerByClientFd(eventFd).serverConfig;
-	std::map<int, ClientHandler>::iterator it = clientsZone.find(eventFd);
-	if (it == clientsZone.end()) {
-		// New client
-		std::pair<std::map<int, ClientHandler>::iterator, bool> ret;
-		ret = clientsZone.insert(std::pair<int, ClientHandler>(eventFd, ClientHandler(eventFd, epollFd, serverConfig, config)));
-		it = ret.first;
-	}
 
+	std::map<int, ClientHandler>::iterator it = clientsZone.find(eventFd);
+	if (it == clientsZone.end())
+	{
+		it = clientsZone.insert(std::make_pair(eventFd, ClientHandler(eventFd, epollFd, serverConfig, config))).first;
+	}
 	ClientHandler& client = it->second;
+
 
 	if (eventsData & EPOLLIN && client.status == Receiving)
 	{
-		std::cout << "ClientHandler: Client Receiving..." << std::endl;
 		client.readyToReceive();
+		client.lastReceive = std::time(0);
 	}
-	else if (eventsData & EPOLLOUT && client.status == Sending)
-	{
-		std::cout << "ClientHandler: Client Sending..." << std::endl;
+	else if (eventsData & EPOLLOUT)// && client.status == Sending)
 		client.readyToSend();
-	}
 
-	if (client.status == Closed)
+	if (client.status == Closed || eventsData & EPOLLHUP || eventsData & EPOLLERR)
 	{
 		std::cout << "connection Closed Remove client from the Map" << std::endl;
 		epoll_ctl(epollFd, EPOLL_CTL_DEL, client.clientFd, NULL);
-		// struct epoll_event events;
-		// epoll_wait(epollFd, &events, 1, -1);
 		close(client.clientFd);
 		clientsZone.erase(it);
 	}

@@ -14,10 +14,11 @@ ClientHandler::ClientHandler(int clientFd, int epollFd ,const ServerConfig &serv
 	this->isCGIfile = 0;
 	this->headersSent = 0;
 	this->offset = 0;
+	this->lastReceive = 0;
 
-	// cgi 
+	// cgi
+	this->isCGI = 0;
 	this->monitorCGI = 0;
-
 }
 
 ClientHandler::~ClientHandler(){
@@ -46,14 +47,14 @@ void ClientHandler::readyToReceive() {
 			}
 			else
 				throw HttpError(BadRequest, "Bad Request");
-			parseRequest();		
+			parseRequest();
 			if (!location._return.empty())
 				redirect();
 			else if (message.method == "GET")
 				GetMethod();
 			else if (message.method == "DELETE")
 				DeleteMethod();
-		}			
+		}
 
 		// check and call the method DELETE or POST <No GET>
 		// to send a request form a method , just append to sendingBuffer
@@ -73,10 +74,24 @@ void ClientHandler::readyToSend() {
 	// Client ready to send data
 	try
 	{
-		if (monitorCGI)
-			checkCGI();
-		else
+		if (status == Sending)
+		{
+			if (monitorCGI)
+			{
+				checkCGI();
+			}
+			else
+				SendResponse();
+		}
+		else if (status == Receiving && lastReceive)
+		{
+			if (time(0) - lastReceive > 5)
+			{
+				status = Sending;
+				throw HttpError(RequestTimeOut,"Request Time Out");
+			}
 			SendResponse();
+		}
 	}
 	catch (const HttpError& e)
 	{
@@ -122,6 +137,7 @@ void ClientHandler::sendToSocket()
 		if (sendBytes <= 0)
 		{
 			status = Closed;
+			std::cerr << "Error Sending data: " << strerror(errno) << "\n";
 			return ;
 		}
 		totalBytesSent += sendBytes;
