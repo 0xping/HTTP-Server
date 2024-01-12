@@ -9,6 +9,7 @@
 #include <netdb.h>
 #include <cstring>
 #include <iostream>
+#include <algorithm>
 #include <cstdio>
 #include <unistd.h>
 #include <functional>
@@ -54,7 +55,7 @@ class ClientHandler : public RequestParser {
 		
 		// to remove & close in destruction
 		std::vector<std::string> tmpFiles;
-		std::vector<int> fds;
+
 	public:
 		ClientStatus status;
 		Binary readingBuffer;
@@ -71,6 +72,7 @@ class ClientHandler : public RequestParser {
 		unsigned int counter;
 	public :
 		ClientHandler(int clientFd, int epollFd ,const  ServerConfig &serverConfig, const ClusterConfig &config);
+		~ClientHandler();
 		void readyToReceive();
 		void readyToSend();
 

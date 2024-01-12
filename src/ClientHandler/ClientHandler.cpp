@@ -20,6 +20,13 @@ ClientHandler::ClientHandler(int clientFd, int epollFd ,const ServerConfig &serv
 
 }
 
+ClientHandler::~ClientHandler(){
+	std::vector<std::string>::iterator it = tmpFiles.begin();
+	for (;it != tmpFiles.end(); it++){
+		std::remove(it->c_str());
+	}
+}
+
 
 void ClientHandler::readyToReceive() {
 	// Client ready to receive data
