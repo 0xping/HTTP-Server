@@ -72,5 +72,8 @@ void ClientHandler::GetAutoIndex(){
 }
 
 void ClientHandler::redirect(){
-    setResponseParams("302", "Moved Permanently", "Location: " + location._return + "\r\n", "");
+    if (!access(fullLocation.c_str(), F_OK)) // if file exists, temporary redirect
+        setResponseParams("302", "Found", "Location: " + location._return + "\r\n", "");
+    else
+        setResponseParams("301", "Moved Permanently", "Location: " + location._return + "\r\n", "");
 }

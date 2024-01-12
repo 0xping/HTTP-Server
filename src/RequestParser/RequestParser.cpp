@@ -54,6 +54,9 @@ void RequestParser::parseRequest()
 	if (message.method != "GET" && message.method != "POST" && message.method != "DELETE")
 		throw HttpError(NotImplemented, "Not Implemented");
 
+	if (parseUri(message.uri.fullUri)) // returns true if location has a redirect
+		return ;
+
 	if (TransferEncoding != message.headers.end())
 	{
 		if (TransferEncoding->second != "chunked")
@@ -62,7 +65,7 @@ void RequestParser::parseRequest()
 	else if (contentLength == message.headers.end() && message.method == "POST")
 		throw HttpError(BadRequest, "Bad Request");
 
-	parseUri(message.uri.fullUri);
+	
 
 	if (!allCharactersAllowed(message.uri.fullUri, URI_ALLOWED_CHARS))
 		throw HttpError(BadRequest, "Bad Request");
@@ -83,9 +86,8 @@ void RequestParser::parseRequest()
 }
 
 
-
-
-void RequestParser::parseUri(const std::string& uriStr) {
+// returns 1 if location has a redirect, 0 otherwise
+bool RequestParser::parseUri(const std::string& uriStr) {
 	Uri &uri = message.uri;
 
 	size_t queryPos = uriStr.find('?');
@@ -95,7 +97,8 @@ void RequestParser::parseUri(const std::string& uriStr) {
 	}
 	location = serverConfig.getLocation(message.uri.path);
 	fullLocation = location.root + &(message.uri.path[1]);
-
+	if (!location._return.empty())
+		return 1;
 	checkPath();	
 
 	std::string fileExtention = getFileExtention(message.uri.path);
@@ -103,6 +106,7 @@ void RequestParser::parseUri(const std::string& uriStr) {
 		CGIpath = location.cgi_path[fileExtention];
 		isCGIfile = true;
 	}
+	return 0;
 }
 
 void RequestParser::checkPath()

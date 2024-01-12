@@ -34,6 +34,7 @@ void ClientHandler::checkCGI(){
 		int elapsedTime = endTime - CGIstartTime;
 		if (elapsedTime > 5){
 			kill(CGIpid, SIGTERM);
+			monitorCGI = 0;
 			throw HttpError(RequestTimeOut, "Request Time Out");
 		}
 	}
