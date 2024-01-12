@@ -1,5 +1,5 @@
 CXX = c++
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address -O3
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98  # -g -fsanitize=address -o3
 NAME = webserv
 
 SRC = $(wildcard utils/*.cpp src/*/**.cpp src/*.cpp) main.cpp
