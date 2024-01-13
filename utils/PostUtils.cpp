@@ -11,14 +11,14 @@ bool isValidBase(const std::string& number, unsigned int &size, const int base)
 
 std::string postHtmlResponseGenerator(std::vector<std::string>& filesNames)
 {
-    std::string htmlResp = "\r\n";
+    std::string htmlResp = "";
     htmlResp += "<!DOCTYPE html>";
     htmlResp += "<html>";
     htmlResp += "<head>";
     htmlResp += "<title>File Upload Success</title>";
     htmlResp += "</head>";
     htmlResp += "<body>";
-    if (filesNames.size() > 1)
+    if (filesNames.size() > 2)
     {
         htmlResp += "<h1>Files Uploaded Successfully!</h1>";
         htmlResp += "<p>The following files have been uploaded:</p>";
@@ -29,7 +29,7 @@ std::string postHtmlResponseGenerator(std::vector<std::string>& filesNames)
         htmlResp += "<p>The following file have been uploaded:</p>";
     }
     htmlResp += "<ul>";
-    for (size_t i = 0; i < filesNames.size(); i++)
+    for (size_t i = 0; i < filesNames.size() - 1; i++)
         htmlResp += "<ul>" + filesNames[i] + "</ul>";
     
     htmlResp += "</ul>";

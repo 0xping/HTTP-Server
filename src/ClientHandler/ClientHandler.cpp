@@ -16,6 +16,7 @@ ClientHandler::ClientHandler(int clientFd, int epollFd ,const ServerConfig &serv
 	this->offset = 0;
 	this->lastReceive = 0;
 	this->chunkSize = 0;
+	this->in = 0;
 	// cgi
 	this->isCGI = 0;
 	this->monitorCGI = 0;
@@ -88,10 +89,11 @@ void ClientHandler::readyToSend() {
 		{
 			if (time(0) - lastReceive > 5)
 			{
+				std::cout << "time out" << std::endl;
 				status = Sending;
 				throw HttpError(RequestTimeOut,"Request Time Out");
 			}
-			SendResponse();
+			// SendResponse();
 		}
 	}
 	catch (const HttpError& e)

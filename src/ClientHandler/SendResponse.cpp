@@ -51,6 +51,7 @@ std::string ClientHandler::generateHeaders(){
 	re += extraHeaders;
 	//if (!isCGI)
 	re += "\r\n";
+	// std::cout << "hi: "<< re << std::endl;
 	return re;
 }
 

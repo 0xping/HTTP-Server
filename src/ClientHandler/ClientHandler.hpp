@@ -70,6 +70,7 @@ class ClientHandler : public RequestParser {
 		//POST
 		unsigned int counter;
 		unsigned int chunkSize;
+		bool in;
 	public :
 		ClientHandler(int clientFd, int epollFd ,const  ServerConfig &serverConfig, const ClusterConfig &config);
 		~ClientHandler();
