@@ -15,7 +15,7 @@ ClientHandler::ClientHandler(int clientFd, int epollFd ,const ServerConfig &serv
 	this->headersSent = 0;
 	this->offset = 0;
 	this->lastReceive = 0;
-
+	this->chunkSize = 0;
 	// cgi
 	this->isCGI = 0;
 	this->monitorCGI = 0;
@@ -40,7 +40,6 @@ void ClientHandler::readyToReceive() {
 		}
 		if (headersLoaded)
 		{
-			std::cout << "Headers Loaded" << std::endl;
 			if (message.headers.find("Host") != message.headers.end()){
 				serverConfig = clusterConfig.getServerConfig(serverConfig.ip, serverConfig.port, message.headers["Host"]);;
 				RequestParser::serverConfig = serverConfig;
@@ -54,6 +53,8 @@ void ClientHandler::readyToReceive() {
 				GetMethod();
 			else if (message.method == "DELETE")
 				DeleteMethod();
+			else if (message.method == "POST")
+				PostMethod();
 		}
 
 		// check and call the method DELETE or POST <No GET>

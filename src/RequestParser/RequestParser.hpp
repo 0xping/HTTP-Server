@@ -54,11 +54,11 @@ struct RequestMessage
 
 class RequestParser
 {
-	
 	public:
 		std::string fullLocation;
 		std::string query;
 		ServerConfig serverConfig;
+		unsigned int contentLength;
 
 		RequestParser();
 		RequestMessage message;

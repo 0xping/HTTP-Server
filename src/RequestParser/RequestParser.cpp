@@ -4,6 +4,7 @@ RequestParser::RequestParser()
 {
 	this->headersLoaded = false;
 	this->isCGIfile = false;
+	this->contentLength = 0;
 }
 
 
@@ -36,11 +37,12 @@ int RequestParser::loadHeaders(Binary &data)
 				size_t colonPos = lines[i].find(':');
 				std::string key = lines[i].substr(0, colonPos);
 				std::string value = (colonPos != std::string::npos) ? lines[i].substr(colonPos + 1) : "";
-				message.headers[key] = value;
+				message.headers[strtrim(key)] = strtrim(value);
 			}
 		}
 		this->headersLoaded = true;
-		size_t bodyStart = headerEnd == data.find("\r\n\r\n") ? headerEnd + 2 : headerEnd + 4;
+		std::cout << "Headers Loaded" << std::endl;
+		size_t bodyStart = headerEnd == data.find("\r\n\r\n") ? headerEnd + 4 : headerEnd + 2;
 		data = data.substr(bodyStart);
 	}
 	return 0;
@@ -50,23 +52,33 @@ void RequestParser::parseRequest()
 {
 	std::map<std::string, std::string>::iterator TransferEncoding = message.headers.find("Transfer-Encoding");
 	std::map<std::string, std::string>::iterator contentLength = message.headers.find("Content-Length");
-
+	// if (contentLength == message.headers.end())
+	// 	std::cout << "end\n";
 	if (message.method != "GET" && message.method != "POST" && message.method != "DELETE")
 		throw HttpError(NotImplemented, "Not Implemented");
 
 	if (parseUri(message.uri.fullUri)) // returns true if location has a redirect
 		return ;
-
-	if (TransferEncoding != message.headers.end())
+	if (serverConfig.hasLocation(message.uri.path))
 	{
-		if (TransferEncoding->second != "chunked")
-			throw HttpError(NotImplemented, "Not Implemented");
+		if (!serverConfig.getLocation(message.uri.path).hasMethod(message.method))
+			throw HttpError(MethodNotAllowed, "Method Not Allowed");
 	}
-	else if (contentLength == message.headers.end() && message.method == "POST")
-		throw HttpError(BadRequest, "Bad Request");
-
-	
-
+	else
+		throw HttpError(NotFound, "Not Found");
+	if (message.method == "POST")
+	{
+		if (TransferEncoding != message.headers.end())
+		{
+			// std::cout << TransferEncoding->second << " " << TransferEncoding->first << std::endl;
+			if (TransferEncoding->second != "chunked")
+				throw HttpError(NotImplemented, "Not Implemented");
+		}
+		else if (contentLength == message.headers.end())
+			throw HttpError(BadRequest, "Bad Request 1");
+		else if (!isValidBase(contentLength->second, this->contentLength, 10))
+			throw HttpError(BadRequest, "Bad Request 2");
+	}
 	if (!allCharactersAllowed(message.uri.fullUri, URI_ALLOWED_CHARS))
 		throw HttpError(BadRequest, "Bad Request");
 
@@ -75,13 +87,6 @@ void RequestParser::parseRequest()
 
 	//413 error
 
-	if (serverConfig.hasLocation(message.uri.path))
-	{
-		if (!serverConfig.getLocation(message.uri.path).hasMethod(message.method))
-			throw HttpError(MethodNotAllowed, "Method Not Allowed");
-	}
-	else
-		throw HttpError(NotFound, "Not Found");
 
 }
 

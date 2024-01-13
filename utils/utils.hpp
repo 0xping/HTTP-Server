@@ -34,7 +34,8 @@ bool allCharactersAllowed(const std::string& str, const std::string& allowedChar
 std::string toString(int n);
 std::string generateUniqueFileName(const std::string& directory = "/tmp", const std::string& extension = "");
 std::string getFileExtention(const std::string& file_path);
-
 bool isValidBase(const std::string& number, unsigned int &size, const int base);
+std::string postHtmlResponseGenerator(std::vector<std::string>& filesNames);
+std::string replaceNewlineWithLiteral(const std::string &input) ;
 
 #endif

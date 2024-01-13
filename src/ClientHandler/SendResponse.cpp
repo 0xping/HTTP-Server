@@ -17,9 +17,10 @@ void ClientHandler::SendResponse(){
 	}
 	else{
 		//protect
+		std::cout << "response: " << file.c_str() << std::endl;
 		std::ifstream fileToSend(file.c_str(), std::ios::binary);
 		if (!fileToSend.is_open())
-			throw HttpError(InternalServerError, "Internal Server Error");
+			throw HttpError(InternalServerError, "Internal Server Error 3");
 		char buffer[BUFFER_SIZE + 1] =  {0};
 
 		fileToSend.seekg(offset);
@@ -64,7 +65,7 @@ std::string ClientHandler::getContentLength(){
 	std::stringstream ss;
 	std::ifstream tmpifstream(file.c_str(), std::ios::binary);
 	if (!tmpifstream.is_open())
-		throw HttpError(InternalServerError, "Internal Server Error");
+		throw HttpError(InternalServerError, "Internal Server Error 4");
 	tmpifstream.seekg(0, std::ios::end);
 	ss << tmpifstream.tellg();
 	tmpifstream.close();
