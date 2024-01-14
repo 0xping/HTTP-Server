@@ -14,6 +14,7 @@ enum ErrorCode {
 	InternalServerError = 500,
 	Forbidden = 403,
 	RequestTimeOut = 408,
+	Conflict = 409,
 	// Add more errors
 };
 

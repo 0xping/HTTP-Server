@@ -42,6 +42,14 @@ enum ClientStatus {
 	Closed, // connection closed
 };
 
+enum MultiPartState 
+{
+	startBound,
+	ContentDisposition,
+	FileContent,
+	EndBound,
+};
+
 struct Connection {
     int sockfd;
     std::time_t lastActivity;
@@ -71,6 +79,10 @@ class ClientHandler : public RequestParser {
 		unsigned int counter;
 		unsigned int chunkSize;
 		bool in;
+		std::string boundary;
+		MultiPartState state;
+		bool firstboundary;
+		
 	public :
 		ClientHandler(int clientFd, int epollFd ,const  ServerConfig &serverConfig, const ClusterConfig &config);
 		~ClientHandler();
@@ -101,9 +113,9 @@ class ClientHandler : public RequestParser {
 
 		// POST METHOD
 		void PostMethod();
-		void chunked_handler();
-		void regular_data_handler();
-		void mutiple_part_handler();
+		void ChunkedHandler();
+		void RegularDataHandler();
+		void MutiplePartHandler();
 
 		// GET METHOD
 		void GetMethod();

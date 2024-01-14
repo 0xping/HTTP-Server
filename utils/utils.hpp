@@ -37,5 +37,6 @@ std::string getFileExtention(const std::string& file_path);
 bool isValidBase(const std::string& number, unsigned int &size, const int base);
 std::string postHtmlResponseGenerator(std::vector<std::string>& filesNames);
 std::string replaceNewlineWithLiteral(const std::string &input) ;
+bool fileExists(const std::string& name);
 
 #endif

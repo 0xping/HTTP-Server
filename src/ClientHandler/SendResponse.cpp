@@ -17,7 +17,7 @@ void ClientHandler::SendResponse(){
 	}
 	else{
 		//protect
-		std::cout << "response: " << file.c_str() << std::endl;
+		// std::cout << "response: " << file.c_str() << std::endl;
 		std::ifstream fileToSend(file.c_str(), std::ios::binary);
 		if (!fileToSend.is_open())
 			throw HttpError(InternalServerError, "Internal Server Error 3");
