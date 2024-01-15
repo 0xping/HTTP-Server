@@ -67,6 +67,8 @@ class RequestParser
 		// ~RequestParser();
 		int	loadHeaders(Binary &data);
 		void parseRequest();
+		void checkRequestLine(std::string& requestLine);
+		void checkHeader(std::string &header);
 		bool parseUri(const std::string& uriStr);  // returns true if location has a redirection
 		std::string CGIpath;
 		bool isCGIfile;

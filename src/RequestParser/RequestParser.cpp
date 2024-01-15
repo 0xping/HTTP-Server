@@ -22,23 +22,16 @@ int RequestParser::loadHeaders(Binary &data)
 		std::string headersStr = data.toStr().substr(0, headerEnd);
 		// TODO: Trim the data first || NOT NEEDED
 		std::vector<std::string> delimiters;
-		delimiters.push_back("\n\n");
+		delimiters.push_back("\n");
 		delimiters.push_back("\r\n");
 
 		std::vector<std::string> lines = splitWithDelimiters(headersStr, delimiters);
-		for (size_t i = 0; i < lines.size(); i++) {
-			if (i == 0) {
-				std::vector<std::string> words = strSplit(lines[i], " ");
-				if (words.size() != 3|| words[2] != "HTTP/1.1")
-					throw HttpError(BadRequest, "Bad Request");
-				message.method = words[0];
-				message.uri.fullUri = words[1];
-			} else {
-				size_t colonPos = lines[i].find(':');
-				std::string key = lines[i].substr(0, colonPos);
-				std::string value = (colonPos != std::string::npos) ? lines[i].substr(colonPos + 1) : "";
-				message.headers[strtrim(key)] = strtrim(value);
-			}
+		for (size_t i = 0; i < lines.size(); i++)
+		{
+			if (i == 0)
+				checkRequestLine(lines[0]);
+			else
+				checkHeader(lines[i]);
 		}
 		this->headersLoaded = true;
 		std::cout << "Headers Loaded" << std::endl;
@@ -47,6 +40,40 @@ int RequestParser::loadHeaders(Binary &data)
 	}
 	return 0;
 }
+
+void RequestParser::checkHeader(std::string &header)
+{
+	size_t colonPos = header.find(':');
+	std::string key = header.substr(0, colonPos);
+	std::string value = (colonPos != std::string::npos) ? header.substr(colonPos + 1) : "";
+	if (key.find(' ') != std::string::npos)
+		throw HttpError(BadRequest, "Bad request No spaces allowed ina key header");
+	if (key == "Host" && message.headers.find("Host") != message.headers.end())
+		throw HttpError(BadRequest, "Bad request Host header redefined");
+	message.headers[strtrim(key)] = strtrim(value);
+}
+
+
+void RequestParser::checkRequestLine(std::string& requestLine)
+{
+	std::vector<std::string> words = strSplit(requestLine, " ",0);
+
+	if (requestLine[0] != ' ' && words.size() == 3)
+	{
+		requestLine = requestLine.substr(requestLine.find_first_not_of(" \t"));
+		std::istringstream requestLineStream(requestLine);
+		std::string httpVersion;
+		requestLineStream >> message.method >> message.uri.fullUri >> httpVersion;
+		words = strSplit(httpVersion, "/", 0);
+		if (words.size() != 2 || words[0] != "HTTP")
+			throw HttpError(BadRequest, "Bad Request checkRequestLine");
+		if (words[1] != "1.1")
+			throw HttpError(HTTPVersionNotSupported ,"505 HTTP Version Not Supported");
+	}
+	else
+		throw HttpError(BadRequest, "Bad Request checkRequestLine");
+}
+
 
 void RequestParser::parseRequest()
 {
@@ -75,9 +102,9 @@ void RequestParser::parseRequest()
 				throw HttpError(NotImplemented, "Not Implemented");
 		}
 		else if (contentLength == message.headers.end())
-			throw HttpError(BadRequest, "Bad Request 1");
+			throw HttpError(BadRequest, "Bad Request");
 		else if (!isValidBase(contentLength->second, this->contentLength, 10))
-			throw HttpError(BadRequest, "Bad Request 2");
+			throw HttpError(BadRequest, "Bad Request");
 	}
 	if (!allCharactersAllowed(message.uri.fullUri, URI_ALLOWED_CHARS))
 		throw HttpError(BadRequest, "Bad Request");
@@ -104,7 +131,7 @@ bool RequestParser::parseUri(const std::string& uriStr) {
 	fullLocation = location.root + message.uri.path;
 	if (!location._return.empty())
 		return 1;
-	checkPath();	
+	checkPath();
 
 	std::string fileExtention = getFileExtention(message.uri.path);
 	if (location.cgi_path.find(fileExtention) != location.cgi_path.end()){
