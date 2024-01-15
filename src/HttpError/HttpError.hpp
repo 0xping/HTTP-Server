@@ -15,6 +15,7 @@ enum ErrorCode {
 	Forbidden = 403,
 	RequestTimeOut = 408,
 	Conflict = 409,
+	HTTPVersionNotSupported = 505
 	// Add more errors
 };
 
