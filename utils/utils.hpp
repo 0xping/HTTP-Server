@@ -23,7 +23,7 @@ std::string strtrim(const std::string& str, const std::string& charsToTrim = " \
 void trim_spaces(std::string& str, bool both);
 
 std::vector<std::string> splitWithDelimiters(const std::string& str, const std::vector<std::string>& delimiters);
-std::vector<std::string> strSplit(const std::string& input, const std::string& delimiters);
+std::vector<std::string> strSplit(const std::string& input, const std::string& delimiters, bool includeEmpty);
 std::string* split(std::string str, char sep);
 
 void cerrAndExit(std::string err, int s);

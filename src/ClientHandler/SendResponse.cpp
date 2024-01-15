@@ -58,7 +58,7 @@ std::string ClientHandler::generateHeaders(){
 std::string ClientHandler::getExtension(){
 	if (file.find(".") == std::string::npos)
 		return "";
-	std::vector<std::string> splitted = strSplit(file, ".");
+	std::vector<std::string> splitted = strSplit(file, ".", 1);
 	return splitted[splitted.size() - 1];
 }
 
