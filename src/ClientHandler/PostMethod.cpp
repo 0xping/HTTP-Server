@@ -3,10 +3,10 @@
 void writeToFile(const std::string &data, const std::string& fileName)
 {
     // std::cout << fileName << std::endl;
-    if (!freopen(fileName.c_str(), "a", stdout))
+    if (!freopen(fileName.c_str(), "ab", stdout))
         throw HttpError(InternalServerError, "Internal Server Error 1");
     std::cout << data;
-    if (!freopen("/dev/tty", "a", stdout))
+    if (!freopen("/dev/tty", "ab", stdout))
         throw HttpError(InternalServerError, "Internal Server Error 2");
 }  
 
