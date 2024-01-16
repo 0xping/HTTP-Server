@@ -24,8 +24,8 @@ int ClientHandler::GetIndex(){
     std::vector<std::string>::iterator it = location.index.begin();
     for (;it != location.index.end(); it++)
     {
-        if (!access(it->c_str(), R_OK)){
-            setResponseParams("200", "OK", "", *it);
+        if (!access((location.root+"/"+(*it)).c_str(), R_OK)){
+            setResponseParams("200", "OK", "", location.root+"/"+(*it));
             return 1;
         }
     }

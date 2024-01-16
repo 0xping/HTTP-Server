@@ -149,7 +149,7 @@ void RequestParser::checkPath()
 		stat(fullLocation.c_str(), &fileInfo);
 		if (S_ISDIR(fileInfo.st_mode))
 			isDir = 1;
-		else if (access(fullLocation.c_str(), R_OK) != 0)
+		if (access(fullLocation.c_str(), R_OK) != 0)
 			throw HttpError(Forbidden, "Forbidden");
 	}
 	else

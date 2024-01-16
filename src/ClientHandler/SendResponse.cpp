@@ -63,13 +63,13 @@ std::string ClientHandler::getExtension(){
 }
 
 std::string ClientHandler::getContentLength(){
+	struct stat fileInfo;
+
+	stat(file.c_str(), &fileInfo);
 	std::stringstream ss;
-	std::ifstream tmpifstream(file.c_str(), std::ios::binary);
-	if (!tmpifstream.is_open())
-		throw HttpError(InternalServerError, "Internal Server Error 4");
-	tmpifstream.seekg(0, std::ios::end);
-	ss << tmpifstream.tellg();
-	tmpifstream.close();
+	
+	ss << fileInfo.st_size;
+
 	return ss.str();
 }
 

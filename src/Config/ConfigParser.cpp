@@ -151,6 +151,8 @@ void ConfigParser::parse_body_size(std::string& str, std::string& line, ServerCo
         cerrAndExit("ERROR: Invalid max body size!", 1);
     std::stringstream size(server.body_size);
     size >> server.max_body_size;
+    if (size.fail())
+        cerrAndExit("ERROR: possible overflow of body size -> " + line, 1);
 }
 
 void ConfigParser::parse_methods(std::string* str, std::ifstream& file, Location& location){
