@@ -1,5 +1,8 @@
 import time
-time.sleep(50)
+import sys
 
-
-print("niggah")
+print("Posted data:")
+print("=" * 20)
+for data in sys.stdin:
+    print(data, end = "")
+print("=" * 20)

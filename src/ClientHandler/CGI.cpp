@@ -18,7 +18,11 @@ void ClientHandler::execCGI(){
 	else{
 		if (!std::freopen(cgioutput.c_str(), "w+", stdout))
 			std::exit(1);
-
+		if (message.method == "POST")
+		{
+			if (!std::freopen(tmpFiles[0].c_str(), "r", stdin))
+				std::exit(1);
+		}
 		const char *args[] = {CGIpath.c_str(), fullLocation.c_str(), postedFileName.c_str(), NULL};
 		const char *env[] = {query.c_str(), NULL};
 

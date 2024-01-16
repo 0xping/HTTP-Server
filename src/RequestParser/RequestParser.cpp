@@ -5,6 +5,7 @@ RequestParser::RequestParser()
 	this->headersLoaded = false;
 	this->isCGIfile = false;
 	this->contentLength = 0;
+	this->upload_path = "./root/UPLOADS";
 }
 
 

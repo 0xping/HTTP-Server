@@ -73,7 +73,7 @@ class RequestParser
 		std::string CGIpath;
 		bool isCGIfile;
 		bool isDir;
-
+		std::string upload_path;
 		void checkPath();
 
 };
