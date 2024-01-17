@@ -20,7 +20,7 @@ void ClientHandler::SendResponse(){
 		// std::cout << "response: " << file.c_str() << std::endl;
 		std::ifstream fileToSend(file.c_str(), std::ios::binary);
 		if (!fileToSend.is_open())
-			throw HttpError(InternalServerError, "Internal Server Error 3");
+			throw HttpError(InternalServerError, "Internal Server Error");
 		char buffer[BUFFER_SIZE + 1] =  {0};
 
 		fileToSend.seekg(offset);

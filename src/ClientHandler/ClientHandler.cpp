@@ -124,7 +124,7 @@ void ClientHandler::readFromSocket(int bufferSize) {
 		{
 			status = Error;
 			std::cerr << "Error receiving data: " << strerror(errno) << "\n";
-			throw HttpError(InternalServerError, "Internal Server Error Read");
+			throw HttpError(InternalServerError, "Internal Server Error");
 		}
 		return ;
 	}

@@ -4,10 +4,10 @@ void writeToFile(const std::string &data, const std::string& fileName)
 {
     // std::cout << fileName << std::endl;
     if (!freopen(fileName.c_str(), "ab", stdout))
-        throw HttpError(InternalServerError, "Internal Server Error 1");
+        throw HttpError(InternalServerError, "Internal Server Error");
     std::cout << data;
     if (!freopen("/dev/tty", "ab", stdout))
-        throw HttpError(InternalServerError, "Internal Server Error 2");
+        throw HttpError(InternalServerError, "Internal Server Error");
 }  
 
 bool checkMultipart(std::string& str, std::string& boundary)
@@ -64,7 +64,7 @@ void ClientHandler::MutiplePartHandler()
         //     firstboundary = false;
         // }
         if (this->readingBuffer.substr(0, boundary.size() + 2).toStr() !=  boundary + "\r\n")
-            throw HttpError(BadRequest, "Bad Request 7");
+            throw HttpError(BadRequest, "Bad Request");
         else
         {
             this->counter += boundary.size() + 2;
@@ -91,7 +91,7 @@ void ClientHandler::MutiplePartHandler()
             state = FileContent;
         }
         else
-            throw HttpError(BadRequest, "Bad Request 9");
+            throw HttpError(BadRequest, "Bad Request");
     }
     if (state == FileContent)
     {
@@ -124,7 +124,7 @@ void ClientHandler::MutiplePartHandler()
         if (this->readingBuffer.substr(0, boundary.size() + 4).toStr() == boundary + "--\r\n")
         {
             if (this->counter + boundary.size() + 4 > RequestParser::serverConfig.max_body_size || this->counter + boundary.size() + 4 > this->contentLength)
-                throw HttpError(BadRequest, "Bad Request 8");
+                throw HttpError(BadRequest, "Bad Request");
             this->tmpFiles.push_back(generateUniqueFileName());
             writeToFile(postHtmlResponseGenerator(tmpFiles), this->tmpFiles[this->tmpFiles.size() - 1]);
             setResponseParams("200", "OK", "", this->tmpFiles[this->tmpFiles.size() - 1]);
@@ -140,7 +140,7 @@ void ClientHandler::MutiplePartHandler()
     if (this->counter > RequestParser::serverConfig.max_body_size || this->counter > this->contentLength)
     {
         // std::cout << "counter: " << counter << ", max body size: " << RequestParser::serverConfig.max_body_size << ", contentLength: " << this->contentLength << std::endl;
-        throw HttpError(BadRequest, "Bad Request 8");
+        throw HttpError(BadRequest, "Bad Request");
     }
 }
 
@@ -166,7 +166,7 @@ void ClientHandler::ChunkedHandler()
         {
             // std::cout << readingBuffer.substr(0, readingBuffer.find("\r\n")).toStr() << "|" << std::endl;
             if (!isValidBase(readingBuffer.substr(0, readingBuffer.find("\r\n")).toStr(), chunkSize, 16))
-                throw HttpError(BadRequest, "Bad Request 3");
+                throw HttpError(BadRequest, "Bad Request");
             // std::cout << chunkSize << " " << readingBuffer.substr(0, readingBuffer.find("\r\n")).toStr() << std::endl;
             if (!chunkSize)
             {
@@ -202,7 +202,7 @@ void ClientHandler::ChunkedHandler()
     // std::cout << "here: " << chunkSize << std::endl;
     // std::cout << "|" <<replaceNewlineWithLiteral(this->readingBuffer.substr(chunkSize, 2).toStr()) << "|" << std::endl;
     if (this->readingBuffer.substr(chunkSize, 2).toStr() != "\r\n")
-        throw HttpError(BadRequest, "Bad Request 4");
+        throw HttpError(BadRequest, "Bad Request");
     else
     {
         writeToFile(this->readingBuffer.substr(0, chunkSize).toStr(), this->tmpFiles[0]);
@@ -210,7 +210,7 @@ void ClientHandler::ChunkedHandler()
         counter += chunkSize;
         chunkSize = 0;
         if (counter > RequestParser::serverConfig.max_body_size)
-            throw HttpError(BadRequest, "Bad Request 5");
+            throw HttpError(BadRequest, "Bad Request");
         ChunkedHandler();
     }
 }
@@ -242,7 +242,7 @@ void ClientHandler::RegularDataHandler()
         // std::cout << counter << " " << contentLength << std::endl;
         this->readingBuffer.erase(0, this->readingBuffer.size());
         if (counter > RequestParser::serverConfig.max_body_size || counter > contentLength)
-            throw HttpError(BadRequest, "Bad Request 6");
+            throw HttpError(BadRequest, "Bad Request");
         if (counter == contentLength)
         {
             // std::cout << "hello" << std::endl;

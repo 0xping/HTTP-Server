@@ -43,13 +43,13 @@ void ClientHandler::GetAutoIndex(){
 
     tmpFiles.push_back(AIfile);
     if (!autoindexFile.is_open())
-        throw HttpError(InternalServerError, "Internal Server Error GET1");
+        throw HttpError(InternalServerError, "Internal Server Error");
     
     DIR *dir = opendir(fullLocation.c_str());
 
     if (dir == NULL){
         autoindexFile.close();
-        throw HttpError(InternalServerError, "Internal Server Error GET2");
+        throw HttpError(InternalServerError, "Internal Server Error");
     }
 
     // html header

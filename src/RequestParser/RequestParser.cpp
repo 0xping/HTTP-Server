@@ -48,9 +48,9 @@ void RequestParser::checkHeader(std::string &header)
 	std::string key = header.substr(0, colonPos);
 	std::string value = (colonPos != std::string::npos) ? header.substr(colonPos + 1) : "";
 	if (key.find(' ') != std::string::npos)
-		throw HttpError(BadRequest, "Bad request No spaces allowed ina key header");
+		throw HttpError(BadRequest, "Bad Request");
 	if (key == "Host" && message.headers.find("Host") != message.headers.end())
-		throw HttpError(BadRequest, "Bad request Host header redefined");
+		throw HttpError(BadRequest, "Bad Request");
 	message.headers[strtrim(key)] = strtrim(value);
 }
 
@@ -67,12 +67,12 @@ void RequestParser::checkRequestLine(std::string& requestLine)
 		requestLineStream >> message.method >> message.uri.fullUri >> httpVersion;
 		words = strSplit(httpVersion, "/", 0);
 		if (words.size() != 2 || words[0] != "HTTP")
-			throw HttpError(BadRequest, "Bad Request checkRequestLine");
+			throw HttpError(BadRequest, "Bad Request");
 		if (words[1] != "1.1")
 			throw HttpError(HTTPVersionNotSupported ,"505 HTTP Version Not Supported");
 	}
 	else
-		throw HttpError(BadRequest, "Bad Request checkRequestLine");
+		throw HttpError(BadRequest, "Bad Request");
 }
 
 
