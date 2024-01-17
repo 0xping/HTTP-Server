@@ -52,7 +52,7 @@ void ClientHandler::MutiplePartHandler()
     //     throw HttpError(Forbidden, "Forbidden");
     if (state == startBound)
     {
-        // std::cout << "->startBound: " << replaceNewlineWithLiteral(this->readingBuffer.toStr()) << std::endl;
+        // std::cout << "->startBound: |" << replaceNewlineWithLiteral(this->readingBuffer.toStr()) << "|" <<  std::endl;
         // std::cout << boundary << std::endl;
         // std::cout << replaceNewlineWithLiteral(this->readingBuffer.toStr()) << " size: " << this->readingBuffer.size()<< std::endl;
         if (this->readingBuffer.size() < boundary.size() + 4)
@@ -132,7 +132,10 @@ void ClientHandler::MutiplePartHandler()
             tmpFiles.erase(tmpFiles.begin(), tmpFiles.end() - 1);
         }
         else
+        {
             state = startBound;
+            MutiplePartHandler();
+        }
     }
     if (this->counter > RequestParser::serverConfig.max_body_size || this->counter > this->contentLength)
     {

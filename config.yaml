@@ -36,7 +36,6 @@ server:
         - nigga
         - small.mp4
       autoindex: on
-      return: http://www.google.com
 
     /ahmed:
       allow_methods:
