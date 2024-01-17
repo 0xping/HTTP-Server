@@ -25,6 +25,7 @@ void ConfigParser::parse_server(std::ifstream& file){
     int s = 0;
     ServerConfig server;
 
+    server.max_body_size = 1048576;
     while(std::getline(file, tmp)){
         if (isAllSpaces(tmp))
             continue;

@@ -34,12 +34,49 @@ server:
     /test:
       root: ./root
       autoindex: on
-      return: http://www.google.com
 
 
 server:
   listen: 127.0.0.1:8080
   server_name: example2.com
+  error_page:
+    - 302: error_pages/302.html
+    - 400: error_pages/400.html
+
+  location:
+    /root:
+      allow_methods:
+        - GET
+        - POST
+      root: ./root
+      autoindex: on
+      index:
+        - test
+        - nigga
+      cgi_path:
+        - php: ./cgi-bin/php-cgi
+        - py: /usr/bin/python3
+
+    /:
+      allow_methods:
+        - GET
+        - DELETE
+        - POST
+      root: ./root
+      index:
+        - nigga
+        - small.mp4
+      autoindex: on
+
+    /test:
+      root: ./root
+      autoindex: on
+      return: http://www.google.com
+
+
+server:
+  listen: 127.0.0.1:8081
+  server_name: www.examp.com
   error_page:
     - 302: error_pages/302.html
     - 400: error_pages/400.html
