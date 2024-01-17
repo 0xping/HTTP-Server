@@ -22,11 +22,16 @@ void ClientHandler::GetMethod(){
 
 int ClientHandler::GetIndex(){
     std::vector<std::string>::iterator it = location.index.begin();
+    struct stat fileInfo;
+
     for (;it != location.index.end(); it++)
     {
-        if (!access((location.root+"/"+(*it)).c_str(), R_OK)){
-            setResponseParams("200", "OK", "", location.root+"/"+(*it));
-            return 1;
+        stat((location.root+"/"+(*it)).c_str(), &fileInfo);
+        if (S_ISREG(fileInfo.st_mode)){
+            if (!access((location.root+"/"+(*it)).c_str(), R_OK)){
+                setResponseParams("200", "OK", "", location.root+"/"+(*it));
+                return 1;
+            }
         }
     }
     return 0;
