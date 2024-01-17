@@ -16,9 +16,6 @@ server:
       index:
         - index.html
         - nigga
-      cgi_path:
-        - php: ./cgi-bin/php-cgi
-        - py: /usr/bin/python3
 
     /:
       allow_methods:
@@ -30,10 +27,18 @@ server:
         - nigga
         - small.mp4
       autoindex: on
+      cgi_path:
+        - php: /usr/bin/php
+        - py: /usr/bin/python3
+        - rb: /usr/bin/ruby
 
     /test:
       root: ./root
       autoindex: on
+      cgi_path:
+        - php: /usr/bin/php
+        - py: /usr/bin/python3
+        - rb: /usr/bin/ruby
 
 
 server:
@@ -54,7 +59,7 @@ server:
         - test
         - nigga
       cgi_path:
-        - php: ./cgi-bin/php-cgi
+        - php: /usr/bin/php
         - py: /usr/bin/python3
 
     /:
@@ -67,6 +72,9 @@ server:
         - nigga
         - small.mp4
       autoindex: on
+      cgi_path:
+        - php: /usr/bin/php
+        - py: /usr/bin/python3
 
     /test:
       root: ./root
@@ -92,7 +100,7 @@ server:
         - test
         - nigga
       cgi_path:
-        - php: ./cgi-bin/php-cgi
+        - php: /usr/bin/php
         - py: /usr/bin/python3
 
     /:

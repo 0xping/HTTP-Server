@@ -272,6 +272,7 @@ void ConfigParser::parse_cgi(std::string* str, std::ifstream& file, Location& lo
         if (location.cgi_path.find(splited[0]) != location.cgi_path.end())
             cerrAndExit("ERROR: found duplicate cgi path " + splited[0] + "in " + location.path, 1);
         location.cgi_path[splited[0]] = splited[1];
+
         delete[] splited;
     }
 }

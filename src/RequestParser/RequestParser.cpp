@@ -126,7 +126,7 @@ bool RequestParser::parseUri(const std::string& uriStr) {
 	size_t queryPos = uriStr.find('?');
 	uri.path = uriStr.substr(0, queryPos);
 	if (queryPos != std::string::npos) {
-		uri.query = uriStr.substr(queryPos + 1);
+		query = "QUERY_STRING="+uriStr.substr(queryPos + 1);
 	}
 	location = serverConfig.getLocation(message.uri.path);
 	fullLocation = location.root + message.uri.path;
@@ -139,6 +139,7 @@ bool RequestParser::parseUri(const std::string& uriStr) {
 		CGIpath = location.cgi_path[fileExtention];
 		isCGIfile = true;
 	}
+
 	return 0;
 }
 

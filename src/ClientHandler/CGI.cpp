@@ -16,7 +16,7 @@ void ClientHandler::execCGI(){
 		status = Sending;
 	}
 	else{
-		if (!std::freopen(cgioutput.c_str(), "wb+", stdout))
+		if (!std::freopen(cgioutput.c_str(), "w+b", stdout))
 			std::exit(1);
 		if (message.method == "POST")
 		{
