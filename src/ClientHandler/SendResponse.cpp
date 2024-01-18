@@ -47,7 +47,8 @@ std::string ClientHandler::generateHeaders(){
 
 	re = "HTTP/1.1 " + statusCode + " " + statusString + "\r\n";
 	re += "Content-Type: " + getMimeType(getExtension()) + "\r\n";
-	re += "Content-Length: " + getContentLength() + "\r\n";
+	if (!isCGI)
+		re += "Content-Length: " + getContentLength() + "\r\n";
 	re += extraHeaders;
 	if (!isCGI)
 		re += "\r\n";
@@ -66,6 +67,7 @@ std::string ClientHandler::getContentLength(){
 	struct stat fileInfo;
 
 	stat(file.c_str(), &fileInfo);
+
 	std::stringstream ss;
 	
 	ss << fileInfo.st_size;
