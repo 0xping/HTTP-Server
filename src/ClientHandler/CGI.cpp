@@ -1,8 +1,19 @@
 #include "ClientHandler.hpp"
+char* createCString(const std::string& str) {
+	char* result = new char[str.length() + 1];
+	std::strcpy(result, str.c_str());
+	return result;
+}
+
+void deleteCStrings(std::vector<char*>& cStrings) {
+	for (size_t i = 0; i < cStrings.size(); ++i) {
+		delete[] cStrings[i];
+	}
+}
 
 void ClientHandler::execCGI(){
 	std::string cgioutput = generateUniqueFileName();
-    tmpFiles.push_back(cgioutput);
+	tmpFiles.push_back(cgioutput);
 
 	pid_t pid = fork();
 	if (pid){
@@ -15,7 +26,8 @@ void ClientHandler::execCGI(){
 		this->CGIstartTime = std::time(0);
 		status = Sending;
 	}
-	else{
+	else
+	{
 		if (!std::freopen(cgioutput.c_str(), "w+b", stdout))
 			std::exit(1);
 		if (message.method == "POST")
@@ -23,10 +35,19 @@ void ClientHandler::execCGI(){
 			if (!std::freopen(tmpFiles[0].c_str(), "rb", stdin))
 				std::exit(1);
 		}
+		std::string cookie = "";
+		if (message.headers.find("Cookie") != message.headers.end())
+			cookie = message.headers["Cookie"];
 		const char *args[] = {CGIpath.c_str(), fullLocation.c_str(), postedFileName.c_str(), NULL};
-		const char *env[] = {query.c_str(), NULL};
+		std::vector<char*> env;
 
-		execve(CGIpath.c_str(), (char *const *)args, (char *const *)env);
+		env.push_back(createCString("QUERY_STRING=" + query));
+		env.push_back(createCString("HTTP_COOKIE=" + cookie));
+		env.push_back(createCString("REQUEST_METHOD=" + message.method));
+		env.push_back(NULL);
+
+		execve(CGIpath.c_str(), const_cast<char* const*>(args), const_cast<char* const*>(&env[0]));
+		deleteCStrings(env);
 		std::exit(1);
 	}
 }
