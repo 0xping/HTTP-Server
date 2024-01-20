@@ -38,11 +38,10 @@ const int BUFFER_SIZE = 1024;
 enum ClientStatus {
 	Receiving, // ready to Receive
 	Sending, // ready to Send
-	Error, // an error occurred
 	Closed, // connection closed
 };
 
-enum MultiPartState 
+enum MultiPartState
 {
 	startBound,
 	ContentDisposition,
@@ -82,7 +81,7 @@ class ClientHandler : public RequestParser {
 		std::string boundary;
 		MultiPartState state;
 		bool firstboundary;
-		
+
 	public :
 		ClientHandler(int clientFd, int epollFd ,const  ServerConfig &serverConfig, const ClusterConfig &config);
 		~ClientHandler();
