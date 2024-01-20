@@ -48,7 +48,7 @@ void ClientHandler::readyToReceive() {
 				RequestParser::serverConfig = serverConfig;
 			}
 			else
-				throw HttpError(BadRequest, "Bad Request");
+				throw HttpError(BadRequest, "Bad Request check the Host header");
 			parseRequest();
 			if (!location._return.empty())
 				redirect();
