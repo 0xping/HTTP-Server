@@ -32,14 +32,14 @@
 #include "../Binary/Binary.hpp"
 #include "../HttpError/HttpError.hpp"
 
-
-#define URI_ALLOWED_CHARS "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;="
+#define URI_ALLOWED_CHARS "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%"
 
 struct Uri {
 	std::string fullUri;
 	std::string path;
 	std::string fullPath;
 	std::string query;
+	std::string unparsedURI;
 };
 
 struct RequestMessage
