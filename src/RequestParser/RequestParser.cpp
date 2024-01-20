@@ -11,17 +11,12 @@ RequestParser::RequestParser()
 
 int RequestParser::loadHeaders(Binary &data)
 {
-	std::cout << "Loading HTTP Headers \n\n\n";
-	// remove newlines in the beginning
 	while(data.toStr().length() && data.toStr()[0] == '\n')
 		data.erase(0,1);
 
-	// Check for the end of HTTP headers (double newline or double \r\n)
 	size_t headerEnd = std::min(data.toStr().find("\r\n\r\n"), data.toStr().find("\n\n"));
 	if (headerEnd != std::string::npos) {
-		// Headers received, process the headers
 		std::string headersStr = data.toStr().substr(0, headerEnd);
-		// TODO: Trim the data first || NOT NEEDED
 		std::vector<std::string> delimiters;
 		delimiters.push_back("\n");
 		delimiters.push_back("\r\n");
@@ -35,7 +30,6 @@ int RequestParser::loadHeaders(Binary &data)
 				checkHeader(lines[i]);
 		}
 		this->headersLoaded = true;
-		std::cout << "Headers Loaded" << std::endl;
 		size_t bodyStart = headerEnd == data.find("\r\n\r\n") ? headerEnd + 4 : headerEnd + 2;
 		data = data.substr(bodyStart);
 	}
@@ -80,8 +74,7 @@ void RequestParser::parseRequest()
 {
 	std::map<std::string, std::string>::iterator TransferEncoding = message.headers.find("Transfer-Encoding");
 	std::map<std::string, std::string>::iterator contentLength = message.headers.find("Content-Length");
-	// if (contentLength == message.headers.end())
-	// 	std::cout << "end\n";
+
 	if (message.method != "GET" && message.method != "POST" && message.method != "DELETE")
 		throw HttpError(NotImplemented, "Not Implemented");
 
@@ -98,7 +91,6 @@ void RequestParser::parseRequest()
 	{
 		if (TransferEncoding != message.headers.end())
 		{
-			// std::cout << TransferEncoding->second << " " << TransferEncoding->first << std::endl;
 			if (TransferEncoding->second != "chunked")
 				throw HttpError(NotImplemented, "Not Implemented");
 		}
@@ -114,8 +106,6 @@ void RequestParser::parseRequest()
 		throw HttpError(RequestURIToLong, "Request-URI Too Long");
 
 	//413 error
-
-
 }
 
 
@@ -126,7 +116,7 @@ bool RequestParser::parseUri(const std::string& uriStr) {
 	size_t queryPos = uriStr.find('?');
 	uri.path = uriStr.substr(0, queryPos);
 	if (queryPos != std::string::npos) {
-		query = "QUERY_STRING="+uriStr.substr(queryPos + 1);
+		query = uriStr.substr(queryPos + 1);
 	}
 	location = serverConfig.getLocation(message.uri.path);
 	fullLocation = location.root + message.uri.path;
