@@ -1,15 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Document</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        label {
+            margin-bottom: 10px;
+        }
+
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+
+        input[type="submit"] {
+            padding: 10px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-	<h1>Hello</h1>
-	<video width="400" controls>
-		<source src="/small.mp4" type="video/mp4">
-		Your browser does not support HTML video.
-	  </video>
+    <h1>File Upload</h1>
+    <form action="/UPLOADS" method="post" enctype="multipart/form-data">
+        <label for="file">Choose a file:</label>
+        <input type="file" name="file" id="file" required>
+        <br>
+        <input type="submit" value="Upload File">
+    </form>
 </body>
 </html>

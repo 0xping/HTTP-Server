@@ -11,11 +11,12 @@ server:
       allow_methods:
         - GET
         - POST
-      root: ./root
       autoindex: on
-      index:
-        - index.html
-        - nigga
+      root: ./root
+      cgi_path:
+        - php: /usr/bin/php
+        - py: /usr/bin/python3
+        - rb: /usr/bin/ruby
 
     /:
       allow_methods:
@@ -23,9 +24,6 @@ server:
         - DELETE
         - POST
       root: ./root
-      index:
-        - nigga
-        - small.mp4
       autoindex: on
       cgi_path:
         - php: /usr/bin/php
