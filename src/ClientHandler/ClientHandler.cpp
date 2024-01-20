@@ -1,102 +1,151 @@
 #include "ClientHandler.hpp"
 
-ClientHandler::ClientHandler(int clientFd, int epollFd)
+
+ClientHandler::ClientHandler(int clientFd, int epollFd ,const ServerConfig &serverConfig, const ClusterConfig &clusterConfig)
 {
 	this->epollFd = epollFd;
 	this->clientFd = clientFd;
-	this->headersLoaded = false;
-	this->done = false;
+	this->serverConfig = serverConfig;
+	this->clusterConfig = clusterConfig;
+	this->status = Receiving;
 
+	this->counter = 0;
+	this->isDir = 0;
+	this->isCGIfile = 0;
+	this->headersSent = 0;
+	this->offset = 0;
+	this->lastReceive = 0;
+	this->chunkSize = 0;
+	this->in = false;
+	this->state = startBound;
+	this->firstboundary = true;
+	// cgi
+	this->isCGI = 0;
+	this->monitorCGI = 0;
 }
 
-void ClientHandler::refresh()
-{
-	std::cout << "Server: Client Refreshed\n";
-	if (!headersLoaded)
+ClientHandler::~ClientHandler(){
+	std::vector<std::string>::iterator it = tmpFiles.begin();
+	for (;it != tmpFiles.end(); it++){
+		std::remove(it->c_str());
+	}
+}
+
+
+void ClientHandler::readyToReceive() {
+	// Client ready to receive data
+	try
 	{
-		std::cout << "loading HTTP Headers \n\n\n";
-		readFromSocket();
-		// Check for end of HTTP headers (double newline or double \r\n)
-		size_t headerEnd = std::min(toRead.find("\r\n\r\n"), toRead.find("\n\n"));
-		if (headerEnd != std::string::npos)
+		if (!headersLoaded)
 		{
-			// Headers received, process the headers
-			std::string headersStr = toRead.substr(0, headerEnd);
-			loadHeaders(headersStr);
-			// Determine the start of the body
-			size_t bodyStart = headerEnd == toRead.find("\r\n\r\n") ? headerEnd + 4 : headerEnd + 2;
-			toRead = toRead.substr(bodyStart);
+			readFromSocket();
+			loadHeaders(readingBuffer);
+		}
+		if (headersLoaded)
+		{
+			if (message.headers.find("Host") != message.headers.end()){
+				serverConfig = clusterConfig.getServerConfig(serverConfig.ip, serverConfig.port, message.headers["Host"]);;
+				RequestParser::serverConfig = serverConfig;
+			}
+			else
+				throw HttpError(BadRequest, "Bad Request check the Host header");
+			parseRequest();
+			if (!location._return.empty())
+				redirect();
+			else if (message.method == "GET")
+				GetMethod();
+			else if (message.method == "DELETE")
+				DeleteMethod();
+			else if (message.method == "POST")
+				PostMethod();
+		}
+
+		// check and call the method DELETE or POST <No GET>
+		// to send a request form a method , just append to sendingBuffer
+		//status = Sending;
+	}
+	catch (const HttpError& e)
+	{
+		// status = Sending; // status = Error;
+		headersSent = 0;
+		std::cerr << "HTTP Error (" << e.getErrorCode() << "): " << e.what() << std::endl;
+		setResponseParams(toString(e.getErrorCode()), e.what(), "", "", false);
+		// TODO : store the error state in the object and wait for a send event to come
+	}
+}
+
+void ClientHandler::readyToSend() {
+	// Client ready to send data
+	try
+	{
+		if (status == Sending)
+		{
+			if (monitorCGI)
+			{
+				checkCGI();
+			}
+			else
+				SendResponse();
+		}
+		else if (status == Receiving && lastReceive)
+		{
+			if (time(0) - lastReceive > 5)
+			{
+				std::cout << "time out" << std::endl;
+				status = Sending;
+				throw HttpError(RequestTimeOut,"Request Time Out");
+			}
+			// SendResponse();
 		}
 	}
-	else
+	catch (const HttpError& e)
 	{
-		//headers are parsed
-		//check the method in <message.method>
-		//and pass the call to the method, HAYTHAM ATACK LOO
-
-		//fake response and then close the connection
-		const char *httpResponse = "HTTP/1.1 200 OK \r\n"
-								   "Content-Type: text/plain\r\n"
-								   "Content-Length: 12\r\n"
-								   "\r\n"
-								   "Hello, World";
-
-		send(this->clientFd, httpResponse, strlen(httpResponse), 0);
-		this->done = true;
+		// status = Sending; // status = Error;
+		headersSent = 0;
+		int errorCode = static_cast<int>(e.getErrorCode());
+		std::cerr << "HTTP Error (" << errorCode << "): " << e.what() << std::endl;
+		setResponseParams(toString(e.getErrorCode()), e.what(), "", "", false); // check if send failed
+		// TODO : store the error state in the object and wait for a send event to come
 	}
-
-	// print headers and buffered
-	std::cout << "-------> Headers <------- \n\n";
-	for (std::map<std::string, std::string>::const_iterator it = message.headers.begin(); it != message.headers.end(); ++it) {
-		std::cout << it->first << ":" << it->second << '\n';
-	}
-
-	std::cout << "\n\n-------> Body  <-------\n" << toRead << '\n';
 }
 
-void ClientHandler::readFromSocket(int bufferSize)
-{
-	char buffer[bufferSize];
+void ClientHandler::readFromSocket(int bufferSize) {
+	unsigned char buffer[bufferSize];
 	std::memset(buffer, 0, bufferSize);
 	ssize_t bytesRead = recv(this->clientFd, buffer, bufferSize - 1, 0);
 
-	if (bytesRead == 0)
-	{
-		std::cout << "Connection closed by client\n";
-		this->done = true;
-	}
-	if (bytesRead == -1)
-	{
-		if (errno != EAGAIN && errno != EWOULDBLOCK)
+	if (bytesRead <= 0) {
+		if (bytesRead == 0)
+		{
+			std::cout << "Connection closed by client\n";
+			status = Closed;
+		}
+		if (bytesRead == -1)
+		{
+			status = Sending;
 			std::cerr << "Error receiving data: " << strerror(errno) << "\n";
+			throw HttpError(InternalServerError, "Internal Server Error");
+		}
+		return ;
 	}
-	this->toRead.append(buffer);
+	this->readingBuffer.append(buffer, bytesRead);
 }
 
-void ClientHandler::closeSocket() {}
 
-int ClientHandler::loadHeaders(const std::string &data)
+void ClientHandler::sendToSocket()
 {
-	//TODO :: trim the data first
-	std::vector<std::string> delimiters;
-	delimiters.push_back("\n\n");
-	delimiters.push_back("\r\n");
-
-	std::vector<std::string> lines = splitWithDelimiters(data, delimiters);
-	for (size_t i = 0; i < lines.size(); i++)
+	size_t totalBytesSent = 0;
+	while (totalBytesSent < sendingBuffer.toStr().size())
 	{
-		if (i == 0)
+		//write(open("log", O_RDWR | O_CREAT | O_APPEND, 0777), sendingBuffer.toStr().c_str() + totalBytesSent, sendingBuffer.toStr().size() - totalBytesSent);
+		ssize_t sendBytes = ::send(this->clientFd, sendingBuffer.toStr().c_str() + totalBytesSent, sendingBuffer.toStr().size() - totalBytesSent, MSG_NOSIGNAL);
+		if (sendBytes <= 0)
 		{
-			//check the first line
+			status = Closed;
+			std::cerr << "Error Sending data: " << strerror(errno) << "\n";
+			return ;
 		}
-		else
-		{
-			size_t colonPos = lines[i].find(':');
-			std::string key = lines[i].substr(0, colonPos);
-			std::string value = (colonPos != std::string::npos) ? lines[i].substr(colonPos + 1) : "";
-			message.headers[key] = value;
-		}
+		totalBytesSent += sendBytes;
 	}
-	this->headersLoaded = true;
-	return 0; // Consider replacing this with a named constant
+	this->sendingBuffer.erase(0, totalBytesSent);
 }
