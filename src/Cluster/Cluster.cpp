@@ -131,9 +131,7 @@ void Cluster::handleExistingConnection(int eventFd, uint32_t eventsData) {
 
 	std::map<int, ClientHandler>::iterator it = clientsZone.find(eventFd);
 	if (it == clientsZone.end())
-	{
 		it = clientsZone.insert(std::make_pair(eventFd, ClientHandler(eventFd, epollFd, serverConfig, config))).first;
-	}
 	ClientHandler& client = it->second;
 
 
