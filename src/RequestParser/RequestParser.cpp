@@ -58,15 +58,16 @@ void RequestParser::checkRequestLine(std::string& requestLine)
 		requestLine = requestLine.substr(requestLine.find_first_not_of(" \t"));
 		std::istringstream requestLineStream(requestLine);
 		std::string httpVersion;
-		requestLineStream >> message.method >> message.uri.fullUri >> httpVersion;
+		requestLineStream >> message.method >> message.uri.unparsedURI >> httpVersion;
+		message.uri.fullUri = urlDecode(message.uri.unparsedURI);
 		words = strSplit(httpVersion, "/", 0);
 		if (words.size() != 2 || words[0] != "HTTP")
-			throw HttpError(BadRequest, "Bad Request");
+			throw HttpError(BadRequest, "Bad Request check the line request");
 		if (words[1] != "1.1")
 			throw HttpError(HTTPVersionNotSupported ,"505 HTTP Version Not Supported");
 	}
 	else
-		throw HttpError(BadRequest, "Bad Request");
+		throw HttpError(BadRequest, "Bad Request request line 1");
 }
 
 
@@ -95,14 +96,14 @@ void RequestParser::parseRequest()
 				throw HttpError(NotImplemented, "Not Implemented");
 		}
 		else if (contentLength == message.headers.end())
-			throw HttpError(BadRequest, "Bad Request");
+			throw HttpError(BadRequest, "Bad Request no contentLength header exist");
 		else if (!isValidBase(contentLength->second, this->contentLength, 10))
-			throw HttpError(BadRequest, "Bad Request");
+			throw HttpError(BadRequest, "Bad Request invalid base");
 	}
-	if (!allCharactersAllowed(message.uri.fullUri, URI_ALLOWED_CHARS))
-		throw HttpError(BadRequest, "Bad Request");
+	if (!allCharactersAllowed(message.uri.unparsedURI, URI_ALLOWED_CHARS))
+		throw HttpError(BadRequest, "Bad Request uri contains none allowed chars " + message.uri.unparsedURI);
 
-	if (message.uri.fullUri.size() > 2048)
+	if (message.uri.unparsedURI.size() > 2048)
 		throw HttpError(RequestURIToLong, "Request-URI Too Long");
 
 	//413 error
