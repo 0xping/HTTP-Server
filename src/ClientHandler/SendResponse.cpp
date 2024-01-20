@@ -52,7 +52,6 @@ std::string ClientHandler::generateHeaders(){
 	re += extraHeaders;
 	if (!isCGI)
 		re += "\r\n";
-	// std::cout << "hi: "<< re << std::endl;
 	return re;
 }
 
@@ -69,7 +68,6 @@ std::string ClientHandler::getContentLength(){
 	stat(file.c_str(), &fileInfo);
 
 	std::stringstream ss;
-	
 	ss << fileInfo.st_size;
 
 	return ss.str();
@@ -148,7 +146,7 @@ std::string ClientHandler::getExtensionPost(std::string mimeType){
 void ClientHandler::setResponseParams(std::string statusCode, std::string statusString, std::string extraHeaders, std::string file, bool isCGI){
 	this->file = file;
 	this->statusCode = statusCode;
-	this->extraHeaders = extraHeaders;
+	this->extraHeaders += extraHeaders;
 	this->statusString = statusString;
 	this->isCGI = isCGI;
 	status = Sending;
