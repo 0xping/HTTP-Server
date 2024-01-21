@@ -99,14 +99,22 @@ void RequestParser::parseRequest()
 		else if (contentLength == message.headers.end())
 			throw HttpError(BadRequest, "Bad Request no contentLength header exist");
 		else if (!isValidBase(contentLength->second, this->contentLength, 10))
-			throw HttpError(BadRequest, "Bad Request invalid base");
+			throw HttpError(BadRequest, "Bad Request");
+	}
+	else
+	{
+		if (!isValidBase(contentLength->second, this->contentLength, 10))
+			throw HttpError(BadRequest, "Bad Request");
+		else if (this->contentLength > this->serverConfig.max_body_size)
+			throw HttpError(PayloadTooLarge, "Payload Too Large");
 	}
 	if (!allCharactersAllowed(message.uri.unparsedURI, URI_ALLOWED_CHARS))
 		throw HttpError(BadRequest, "Bad Request uri contains none allowed chars " + message.uri.unparsedURI);
 
 	if (message.uri.unparsedURI.size() > 2048)
 		throw HttpError(RequestURIToLong, "Request-URI Too Long");
-
+		
+	
 	//413 error
 }
 
