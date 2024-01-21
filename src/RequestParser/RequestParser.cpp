@@ -97,12 +97,14 @@ void RequestParser::parseRequest()
 				throw HttpError(NotImplemented, "Not Implemented");
 		}
 		else if (contentLength == message.headers.end())
-			throw HttpError(BadRequest, "Bad Request no contentLength header exist");
+			throw HttpError(LengthRequired, "Length Required");
 		else if (!isValidBase(contentLength->second, this->contentLength, 10))
 			throw HttpError(BadRequest, "Bad Request");
 	}
 	else
 	{
+		if (contentLength == message.headers.end())
+			throw HttpError(LengthRequired, "Length Required");
 		if (!isValidBase(contentLength->second, this->contentLength, 10))
 			throw HttpError(BadRequest, "Bad Request");
 		else if (this->contentLength > this->serverConfig.max_body_size)

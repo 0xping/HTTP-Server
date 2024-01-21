@@ -16,7 +16,8 @@ enum ErrorCode {
 	RequestTimeOut = 408,
 	Conflict = 409,
 	HTTPVersionNotSupported = 505,
-	PayloadTooLarge = 413
+	PayloadTooLarge = 413,
+	LengthRequired = 411
 	// Add more errors
 };
 
