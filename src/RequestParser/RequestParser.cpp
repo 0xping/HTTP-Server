@@ -5,7 +5,8 @@ RequestParser::RequestParser()
 	this->headersLoaded = false;
 	this->isCGIfile = false;
 	this->contentLength = 0;
-	this->upload_path = "./root/UPLOADS";
+	
+	
 }
 
 
@@ -120,6 +121,10 @@ bool RequestParser::parseUri(const std::string& uriStr) {
 		query = uriStr.substr(queryPos + 1);
 	}
 	location = serverConfig.getLocation(message.uri.path);
+	if (this->location.upload_path.empty())
+		this->upload_path = "./root/UPLOADS";
+	else
+		this->upload_path = this->location.upload_path;
 	fullLocation = location.root + message.uri.path;
 	if (!location._return.empty())
 		return 1;

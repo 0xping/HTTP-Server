@@ -80,7 +80,6 @@ class ClientHandler : public RequestParser {
 		bool in;
 		std::string boundary;
 		MultiPartState state;
-		bool firstboundary;
 
 	public :
 		ClientHandler(int clientFd, int epollFd ,const  ServerConfig &serverConfig, const ClusterConfig &config);

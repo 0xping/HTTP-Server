@@ -18,7 +18,6 @@ ClientHandler::ClientHandler(int clientFd, int epollFd ,const ServerConfig &serv
 	this->chunkSize = 0;
 	this->in = false;
 	this->state = startBound;
-	this->firstboundary = true;
 	// cgi
 	this->isCGI = 0;
 	this->monitorCGI = 0;

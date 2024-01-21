@@ -59,6 +59,7 @@ server:
       cgi_path:
         - php: /usr/bin/php
         - py: /usr/bin/python3
+      upload_path: root/root/here
 
     /:
       allow_methods:

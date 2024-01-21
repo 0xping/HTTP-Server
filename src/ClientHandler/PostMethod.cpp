@@ -74,6 +74,7 @@ void ClientHandler::MutiplePartHandler()
     }
     if (state == ContentDisposition)
     {
+        // this->location.path
         // std::cout << "->ContentDisposition: |" << replaceNewlineWithLiteral(this->readingBuffer.toStr()) << "|" << std::endl;
         std::string gigaStr;
         pos = this->readingBuffer.find("\r\n\r\n");
@@ -123,11 +124,13 @@ void ClientHandler::MutiplePartHandler()
             return;
         if (this->readingBuffer.substr(0, boundary.size() + 4).toStr() == boundary + "--\r\n")
         {
-            if (this->counter + boundary.size() + 4 > RequestParser::serverConfig.max_body_size || this->counter + boundary.size() + 4 > this->contentLength)
+            if (this->counter + boundary.size() + 4 > RequestParser::serverConfig.max_body_size)
+                throw HttpError(PayloadTooLarge, "Payload Too Large");
+            if (this->counter + boundary.size() + 4 > this->contentLength)
                 throw HttpError(BadRequest, "Bad Request");
             this->tmpFiles.push_back(generateUniqueFileName());
             writeToFile(postHtmlResponseGenerator(tmpFiles), this->tmpFiles[this->tmpFiles.size() - 1]);
-            setResponseParams("200", "OK", "", this->tmpFiles[this->tmpFiles.size() - 1]);
+            setResponseParams("201", "OK", "", this->tmpFiles[this->tmpFiles.size() - 1]);
             // firstboundary = 1;
             tmpFiles.erase(tmpFiles.begin(), tmpFiles.end() - 1);
         }
@@ -137,18 +140,19 @@ void ClientHandler::MutiplePartHandler()
             MutiplePartHandler();
         }
     }
-    if (this->counter > RequestParser::serverConfig.max_body_size || this->counter > this->contentLength)
-    {
         // std::cout << "counter: " << counter << ", max body size: " << RequestParser::serverConfig.max_body_size << ", contentLength: " << this->contentLength << std::endl;
+    if (this->counter > RequestParser::serverConfig.max_body_size)
+        throw HttpError(PayloadTooLarge, "Payload Too Large");
+    if (this->counter > this->contentLength)
         throw HttpError(BadRequest, "Bad Request");
-    }
+    
 }
 
 void ClientHandler::ChunkedHandler()
 {
     // std::cout << "hi" << std::endl;
     if (!this->tmpFiles.size())
-{
+    {
         if (message.headers.find("Content-Type") != message.headers.end())
             this->tmpFiles.push_back(generateUniqueFileName(RequestParser::upload_path, getExtensionPost(message.headers["Content-Type"])));
         else
@@ -181,7 +185,7 @@ void ClientHandler::ChunkedHandler()
                     }
                     this->tmpFiles.push_back(generateUniqueFileName());
                     writeToFile(postHtmlResponseGenerator(tmpFiles), this->tmpFiles[this->tmpFiles.size() - 1]);
-                    setResponseParams("200", "OK", "", this->tmpFiles[this->tmpFiles.size() - 1]);
+                    setResponseParams("201", "OK", "", this->tmpFiles[this->tmpFiles.size() - 1]);
                     tmpFiles.erase(tmpFiles.begin(), tmpFiles.end() - 1);
                     // std::cout << "end chunked" << std::endl;
                 }
@@ -241,7 +245,9 @@ void ClientHandler::RegularDataHandler()
         counter += readingBuffer.size();
         // std::cout << counter << " " << contentLength << std::endl;
         this->readingBuffer.erase(0, this->readingBuffer.size());
-        if (counter > RequestParser::serverConfig.max_body_size || counter > contentLength)
+        if (this->counter > RequestParser::serverConfig.max_body_size)
+        throw HttpError(PayloadTooLarge, "Payload Too Large");
+        if (this->counter > this->contentLength)
             throw HttpError(BadRequest, "Bad Request");
         if (counter == contentLength)
         {
@@ -253,7 +259,7 @@ void ClientHandler::RegularDataHandler()
             }
             this->tmpFiles.push_back(generateUniqueFileName());
             writeToFile(postHtmlResponseGenerator(tmpFiles), this->tmpFiles[this->tmpFiles.size() - 1]);
-            setResponseParams("200", "OK", "", this->tmpFiles[this->tmpFiles.size() - 1]);
+            setResponseParams("201", "OK", "", this->tmpFiles[this->tmpFiles.size() - 1]);
             // std::cout << this->tmpFiles[this->tmpFiles.size() - 1] << std::endl;
             // sleep(50);
             tmpFiles.erase(tmpFiles.begin(), tmpFiles.end() - 1);
