@@ -28,7 +28,7 @@ server:
       index:
         - index.html
       cgi_path:
-        - php: /usr/bin/php
+        - php: /usr/bin/cgiphp
         - py: /usr/bin/python3
         - rb: /usr/bin/ruby
 
@@ -75,7 +75,6 @@ server:
       root: ./www
       index:
         - nigga
-        - small.mp4
       autoindex: on
       cgi_path:
         - php: /usr/bin/php
@@ -88,7 +87,7 @@ server:
 
 
 server:
-  listen: 127.0.0.3:8080
+  listen: 127.0.0.3:8081
   server_name: www.examp.com
   error_page:
     - 302: error_pages/302.html
