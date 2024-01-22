@@ -8,7 +8,7 @@ void writeToFile(const std::string &data, const std::string& fileName)
     std::cout << data;
     if (!freopen("/dev/tty", "ab", stdout))
         throw HttpError(InternalServerError, "Internal Server Error");
-}  
+}
 
 bool checkMultipart(std::string& str, std::string& boundary)
 {
@@ -115,11 +115,10 @@ void ClientHandler::MutiplePartHandler()
          //--------------------------005948816781938767311044
             // std::cout << "here 2\n";
             size_t length = this->readingBuffer.size();
-            if (length - ("\r\n" + boundary).size() > 64 * BUFFER_SIZE)
+            if (length > ("\r\n" + boundary).size() + 64 * BUFFER_SIZE)
             {
                 writeToFile(this->readingBuffer.substr(0, length - ("\r\n" + boundary).size()).toStr(), this->tmpFiles[this->tmpFiles.size() - 1]);
                 this->counter += length - ("\r\n" + boundary).size();
-                this->readingBuffer = this->readingBuffer.substr(length - ("\r\n" + boundary).size(), this->readingBuffer.size());
             }
         }
     }
@@ -151,7 +150,6 @@ void ClientHandler::MutiplePartHandler()
         throw HttpError(PayloadTooLarge, "Payload Too Large");
     if (this->counter > this->contentLength)
         throw HttpError(BadRequest, "Bad Request");
-    
 }
 
 void ClientHandler::ChunkedHandler()

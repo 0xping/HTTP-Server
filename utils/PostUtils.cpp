@@ -10,6 +10,7 @@ bool isValidBase(const std::string& number, unsigned int &size, const int base)
 }
 
 
+
 std::string postHtmlResponseGenerator(std::vector<std::string>& filesNames)
 {
     std::string htmlResp = ""
@@ -44,7 +45,7 @@ std::string postHtmlResponseGenerator(std::vector<std::string>& filesNames)
             "<ul>";
                 for (size_t i = 0; i < filesNames.size() - 1; i++)
                     htmlResp += "<li>" + filesNames[i] + "</li>" ;
-            htmlResp += "</ul>";
+            htmlResp += "</ul>"
         "</div>"
     "</body>";
     htmlResp += "</html>";
