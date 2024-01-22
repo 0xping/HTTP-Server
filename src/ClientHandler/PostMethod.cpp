@@ -34,8 +34,11 @@ bool isContentDispositionValid(const std::string &str, std::string &fileName)
 {
     size_t pos_1 = str.find("filename=");
     size_t pos_2;
-    if (pos_1 != std::string::npos && (pos_2 = str.substr(pos_1 + 10, str.size()).find("\"")))
+    if (pos_1 != std::string::npos)
     {
+        pos_2 = str.substr(pos_1 + 10, str.size()).find("\"");
+        if (pos_2 == std::string::npos)
+            return false;
         fileName = str.substr(pos_1 + 10, pos_2);
         if (fileName == "")
             return false;
@@ -112,9 +115,12 @@ void ClientHandler::MutiplePartHandler()
          //--------------------------005948816781938767311044
             // std::cout << "here 2\n";
             size_t length = this->readingBuffer.size();
-            writeToFile(this->readingBuffer.substr(0, length - ("\r\n" + boundary).size()).toStr(), this->tmpFiles[this->tmpFiles.size() - 1]);
-            this->counter += length - ("\r\n" + boundary).size();
-            this->readingBuffer = this->readingBuffer.substr(length - ("\r\n" + boundary).size(), this->readingBuffer.size());
+            if (length - ("\r\n" + boundary).size() > 64 * BUFFER_SIZE)
+            {
+                writeToFile(this->readingBuffer.substr(0, length - ("\r\n" + boundary).size()).toStr(), this->tmpFiles[this->tmpFiles.size() - 1]);
+                this->counter += length - ("\r\n" + boundary).size();
+                this->readingBuffer = this->readingBuffer.substr(length - ("\r\n" + boundary).size(), this->readingBuffer.size());
+            }
         }
     }
     if (state == EndBound)
@@ -130,7 +136,7 @@ void ClientHandler::MutiplePartHandler()
                 throw HttpError(BadRequest, "Bad Request");
             this->tmpFiles.push_back(generateUniqueFileName());
             writeToFile(postHtmlResponseGenerator(tmpFiles), this->tmpFiles[this->tmpFiles.size() - 1]);
-            setResponseParams("201", "OK", "", this->tmpFiles[this->tmpFiles.size() - 1]);
+            setResponseParams("201", "OK", "Content-type: text/html\r\n", this->tmpFiles[this->tmpFiles.size() - 1]);
             // firstboundary = 1;
             tmpFiles.erase(tmpFiles.begin(), tmpFiles.end() - 1);
         }
@@ -185,7 +191,7 @@ void ClientHandler::ChunkedHandler()
                     }
                     this->tmpFiles.push_back(generateUniqueFileName());
                     writeToFile(postHtmlResponseGenerator(tmpFiles), this->tmpFiles[this->tmpFiles.size() - 1]);
-                    setResponseParams("201", "OK", "", this->tmpFiles[this->tmpFiles.size() - 1]);
+                    setResponseParams("201", "OK", "Content-type: text/html\r\n", this->tmpFiles[this->tmpFiles.size() - 1]);
                     tmpFiles.erase(tmpFiles.begin(), tmpFiles.end() - 1);
                     // std::cout << "end chunked" << std::endl;
                 }
@@ -259,7 +265,7 @@ void ClientHandler::RegularDataHandler()
             }
             this->tmpFiles.push_back(generateUniqueFileName());
             writeToFile(postHtmlResponseGenerator(tmpFiles), this->tmpFiles[this->tmpFiles.size() - 1]);
-            setResponseParams("201", "OK", "", this->tmpFiles[this->tmpFiles.size() - 1]);
+            setResponseParams("201", "OK", "Content-type: text/html\r\n", this->tmpFiles[this->tmpFiles.size() - 1]);
             // std::cout << this->tmpFiles[this->tmpFiles.size() - 1] << std::endl;
             // sleep(50);
             tmpFiles.erase(tmpFiles.begin(), tmpFiles.end() - 1);
