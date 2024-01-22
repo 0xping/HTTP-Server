@@ -119,6 +119,7 @@ void ClientHandler::MutiplePartHandler()
             {
                 writeToFile(this->readingBuffer.substr(0, length - ("\r\n" + boundary).size()).toStr(), this->tmpFiles[this->tmpFiles.size() - 1]);
                 this->counter += length - ("\r\n" + boundary).size();
+                this->readingBuffer = this->readingBuffer.substr(length - ("\r\n" + boundary).size(), this->readingBuffer.size());
             }
         }
     }
