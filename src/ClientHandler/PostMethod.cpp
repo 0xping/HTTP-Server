@@ -3,6 +3,7 @@
 void writeToFile(const std::string &data, const std::string& fileName)
 {
     // std::cout << fileName << std::endl;
+    std::cout << fileName.c_str() << std::endl;
     if (!freopen(fileName.c_str(), "ab", stdout))
         throw HttpError(InternalServerError, "Internal Server Error");
     std::cout << data;

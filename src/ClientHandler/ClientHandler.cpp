@@ -47,7 +47,7 @@ void ClientHandler::readyToReceive() {
 				RequestParser::serverConfig = serverConfig;
 			}
 			else
-				throw HttpError(BadRequest, "Bad Request check the Host header");
+				throw HttpError(BadRequest, "Bad Request");
 			parseRequest();
 			if (!location._return.empty())
 				redirect();
@@ -114,17 +114,8 @@ void ClientHandler::readFromSocket(int bufferSize) {
 	ssize_t bytesRead = recv(this->clientFd, buffer, bufferSize - 1, 0);
 
 	if (bytesRead <= 0) {
-		if (bytesRead == 0)
-		{
-			std::cout << "Connection closed by client\n";
-			status = Closed;
-		}
-		if (bytesRead == -1)
-		{
-			status = Sending;
-			std::cerr << "Error receiving data: " << strerror(errno) << "\n";
-			throw HttpError(InternalServerError, "Internal Server Error");
-		}
+		status = Closed;
+		std::cout << "Connection closed by client\n";
 		return ;
 	}
 	this->readingBuffer.append(buffer, bytesRead);
