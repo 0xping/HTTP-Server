@@ -43,8 +43,8 @@ std::string postHtmlResponseGenerator(std::vector<std::string>& filesNames)
             "<p>The following files has been successfully uploaded to the server.</p>"
             "<ul>";
                 for (size_t i = 0; i < filesNames.size() - 1; i++)
-                    htmlResp += "<li> <a href=" + (std::string)(filesNames[i].c_str() + 6) + ">"  + filesNames[i] + "</a></li>" ;
-            htmlResp += "</ul>"
+                    htmlResp += "<li>" + filesNames[i] + "</li>" ;
+            htmlResp += "</ul>";
         "</div>"
     "</body>";
     htmlResp += "</html>";
