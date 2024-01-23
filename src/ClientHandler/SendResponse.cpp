@@ -5,7 +5,8 @@ void ClientHandler::SendResponse(){
 	if (!headersSent){
 		if (file.empty())
 			file = serverConfig.getErrorPage(statusCode);
-
+		if (access(file.c_str(), R_OK))
+			throw HttpError(InternalServerError, "Internal Server Error");
 		std::string re;
 
 		re = generateHeaders();
