@@ -140,7 +140,7 @@ void Cluster::handleExistingConnection(int eventFd, uint32_t eventsData) {
 void Cluster::acceptConnections(int serverSocket) {
 	sockaddr_in clientAddr;
 	socklen_t clientAddrLen = sizeof(clientAddr);
-	int clientSocket = accept(serverSocket, reinterpret_cast<struct sockaddr*>(&clientAddr), &clientAddrLen);
+	int clientSocket = accept(serverSocket, (struct sockaddr*)(&clientAddr), &clientAddrLen);
 	if (clientSocket == -1) {
 		std::cerr << "Error accepting connection: " << strerror(errno) << "\n";
 		return;
