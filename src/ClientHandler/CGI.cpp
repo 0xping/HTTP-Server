@@ -58,7 +58,8 @@ void ClientHandler::checkCGI(){
 		std::time_t endTime = std::time(0);
 		int elapsedTime = endTime - CGIstartTime;
 		if (elapsedTime > 5){
-			kill(CGIpid, SIGTERM);
+			kill(CGIpid, SIGKILL);
+			waitpid(CGIpid, &status, 0);
 			monitorCGI = 0;
 			throw HttpError(RequestTimeOut, "Request Time Out");
 		}

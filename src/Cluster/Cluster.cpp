@@ -133,14 +133,14 @@ void Cluster::handleExistingConnection(int eventFd, uint32_t eventsData) {
 		std::cout << "connection Closed Remove client from the Map" << std::endl;
 		epoll_ctl(epollFd, EPOLL_CTL_DEL, client.clientFd, NULL);
 		close(client.clientFd);
+		if (client.monitorCGI)
+			kill(client.CGIpid, SIGKILL);
 		clientsZone.erase(it);
 	}
 }
 
 void Cluster::acceptConnections(int serverSocket) {
-	sockaddr_in clientAddr;
-	socklen_t clientAddrLen = sizeof(clientAddr);
-	int clientSocket = accept(serverSocket, (struct sockaddr*)(&clientAddr), &clientAddrLen);
+	int clientSocket = accept(serverSocket, 0, 0);
 	if (clientSocket == -1) {
 		std::cerr << "Error accepting connection: " << strerror(errno) << "\n";
 		return;
