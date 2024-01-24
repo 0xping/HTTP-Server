@@ -21,7 +21,7 @@ Cluster::Cluster(const ClusterConfig &configs)
 
 
 void Cluster::createEpoll() {
-	epollFd = epoll_create(64);
+	epollFd = epoll_create(1024);
 	if (epollFd == -1) {
 		std::cerr << "Error creating epoll instance\n";
 		cleanup();
@@ -84,13 +84,13 @@ bool Cluster::isServerFd(int fd)
 }
 
 void Cluster::eventLoop() {
-	const int maxEvents = 64;
+	const int maxEvents = 1024;
 	struct epoll_event events[maxEvents];
 
 	while (true )
 	{
 		int numEvents = epoll_wait(epollFd, events, maxEvents, -1);
-		if (numEvents == -1)// && errno != EINTR)
+		if (numEvents == -1)
 		{
 			std::cerr << "Error in epoll_wait: " << strerror(errno) << "\n";
 			break;
@@ -125,7 +125,7 @@ void Cluster::handleExistingConnection(int eventFd, uint32_t eventsData) {
 		client.readyToReceive();
 		client.lastReceive = std::time(0);
 	}
-	else if (eventsData & EPOLLOUT)// && client.status == Sending)
+	else if (eventsData & EPOLLOUT)
 		client.readyToSend();
 
 	if (client.status == Closed || eventsData & EPOLLHUP || eventsData & EPOLLERR)
