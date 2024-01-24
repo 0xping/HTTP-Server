@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 
-import time
-
-time.sleep(10)
-
 # Set the content type of the response to HTML
 print("Content-type: text/html\r\n\r\n", end="")
 

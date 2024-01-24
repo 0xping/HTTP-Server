@@ -26,10 +26,19 @@ int ClientHandler::GetIndex(){
 
     for (;it != location.index.end(); it++)
     {
-        stat((location.root+"/"+(*it)).c_str(), &fileInfo);
+        std::string indexName = location.root+"/"+(*it);
+        stat(indexName.c_str(), &fileInfo);
         if (S_ISREG(fileInfo.st_mode)){
-            if (!access((location.root+"/"+(*it)).c_str(), R_OK)){
-                setResponseParams("200", "OK", "", location.root+"/"+(*it));
+            if (!access(indexName.c_str(), R_OK)){
+                std::string fileExtention = getFileExtention(indexName);
+	            if (location.cgi_path.find(fileExtention) != location.cgi_path.end()){
+	            	CGIpath = location.cgi_path[fileExtention];
+                    fullLocation = indexName;
+		            isCGIfile = true;
+                    execCGI();
+	            }
+                else
+                    setResponseParams("200", "OK", "", indexName);
                 return 1;
             }
         }

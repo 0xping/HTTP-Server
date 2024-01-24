@@ -26,7 +26,7 @@ server:
       root: ./www
       autoindex: on
       index:
-        - index.html
+        - test/cgi.py
       cgi_path:
         - php: /usr/bin/cgiphp
         - py: /usr/bin/python3
