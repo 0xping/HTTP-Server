@@ -31,7 +31,7 @@ struct addrinfo* Server::setupAddressInfo() {
 	ss << serverConfig.port;
 	ss >> portAsStr;
 
-	std::cout << serverConfig.ip << "   "  << portAsStr << "\n\n";
+	std::cout << serverConfig.ip << ":" << portAsStr << "\n\n";
 
 	int status = getaddrinfo(serverConfig.ip.c_str(), portAsStr.c_str(), &hints, &result);
 	if (status != 0) {
