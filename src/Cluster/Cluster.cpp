@@ -51,21 +51,6 @@ void Cluster::addSocketToEpoll(int fd) {
 	}
 }
 
-
-int Cluster::setNonBlocking(int fd) {
-	int flags = fcntl(fd, F_GETFL, 0);
-	if (flags == -1) {
-		std::cerr << "Error setting socket to None-Blocking mode\n";
-		return -1;
-	}
-	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-		std::cerr << "Error setting socket to None-Blocking mode\n";
-		return -1;
-	}
-	return 0;
-}
-
-
 Server& Cluster::getServerByClientFd(int fd)
 {
 	for (size_t i = 0; i < servers.size(); i++) {
@@ -161,12 +146,6 @@ void Cluster::acceptConnections(int serverSocket) {
 		return;
 	}
 	std::cout << "Server: Accepted new connection\n";
-
-	if (setNonBlocking(clientSocket) == -1) {
-		std::cerr << "Error setting non-blocking flag on client socket\n";
-		close(clientSocket);
-		return;
-	}
 
 	addSocketToEpoll(clientSocket);
 	getServerByFd(serverSocket).connectedClients.insert(clientSocket);

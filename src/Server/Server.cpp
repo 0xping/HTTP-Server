@@ -9,7 +9,6 @@ Server::Server(const ServerConfig& serverConfig, const ClusterConfig& clusterCon
 	struct addrinfo* result = setupAddressInfo();
 	bindToAddress(result);
 	freeaddrinfo(result);
-	setNonBlocking(serverSocket);
 	listenForConnections();
 	std::cout << "Server: Initialized successfully\n";
 }
@@ -70,20 +69,6 @@ void Server::bindToAddress(struct addrinfo* result) {
 		return;
 	}
 }
-
-int Server::setNonBlocking(int fd) {
-	int flags = fcntl(fd, F_GETFL, 0);
-	if (flags == -1) {
-		std::cerr << "Error setting socket to None-Blocking mode\n";
-		return -1;
-	}
-	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-		std::cerr << "Error setting socket to None-Blocking mode\n";
-		return -1;
-	}
-	return 0;
-}
-
 
 
 void Server::listenForConnections() {
