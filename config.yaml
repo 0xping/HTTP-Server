@@ -1,7 +1,7 @@
 server:
   listen: 127.0.0.2:8080
   max_client_body_size: 21021654564
-  server_name: example1.com
+  server_names: example1.com
   error_page:
     - 302: error_pages/302.html
     - 400: error_pages/400.html
@@ -47,7 +47,7 @@ server:
 
 server:
   listen: 127.0.0.1:8080
-  server_name: example2.com
+  server_names: example2.com
   error_page:
     - 302: error_pages/302.html
     - 400: error_pages/400.html
@@ -88,7 +88,7 @@ server:
 
 server:
   listen: 127.0.0.3:8081
-  server_name: www.examp.com
+  server_names: www.examp.com
   error_page:
     - 302: error_pages/302.html
     - 400: error_pages/400.html

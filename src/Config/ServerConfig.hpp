@@ -18,7 +18,7 @@ class ServerConfig {
     public:
         int                                 port;
         std::string                         ip;
-        std::string                         server_name;
+        std::vector<std::string>            server_names;
         size_t                              max_body_size;
         std::string                         body_size;
         std::map<std::string, Location>   locations;

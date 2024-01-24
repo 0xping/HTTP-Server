@@ -123,8 +123,8 @@ void ConfigParser::parse_line(std::string& line, std::ifstream& file, ServerConf
         parse_ip(splited[1], line, server);
     else if (splited[0] == "max_client_body_size")
         parse_body_size(splited[1], line, server);
-    else if (splited[0] == "server_name")
-        parse_in_line(splited[1], line, server.server_name);
+    else if (splited[0] == "server_names")
+        parse_server_name(splited[1], line, server.server_names);
     else if (splited[0] == "error_page")
         parse_error_pages(line, splited[1], file, server);
     else if (splited[0] == "location"){
@@ -143,6 +143,12 @@ void ConfigParser::parse_line(std::string& line, std::ifstream& file, ServerConf
         cerrAndExit("ERROR: Invalid directive found -> " + splited[0], 1);
     delete[] splited;
 }
+
+void ConfigParser::parse_server_name(std::string field, std::string line, std::vector<std::string>& server_names){
+    if (field.empty())
+        cerrAndExit("ERROR: field can't be empty -> " + line, 1);
+    server_names = strSplit(field, " ", 0);
+};
 
 void ConfigParser::parse_body_size(std::string& str, std::string& line, ServerConfig& server){
     if (!server.body_size.empty())
@@ -348,7 +354,7 @@ ServerConfig& ConfigParser::getServerConfig(std::string& ip, int port, std::stri
 
     for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); it++){                
         if (ip == it->ip && port == it->port){
-            if (host == it->server_name)
+            if (std::find(it->server_names.begin(), it->server_names.end(), host) != it->server_names.end())
                 return *it;
             if (tmp.empty())
                 tmp.push_back(&(*it));

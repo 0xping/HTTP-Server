@@ -137,5 +137,6 @@ void ClientHandler::sendToSocket()
 		}
 		totalBytesSent += sendBytes;
 	}
+	std::cout << totalBytesSent << std::endl;
 	this->sendingBuffer.erase(0, totalBytesSent);
 }

@@ -99,7 +99,7 @@ class ClientHandler : public RequestParser {
 		bool headersSent;
 
 		void setResponseParams(std::string statusCode, std::string statusString, std::string extraHeaders, std::string file, bool isCGI=false);
-
+		void sendServerError();
 		void SendResponse();
 		std::string generateHeaders();
 		std::string getExtension();
