@@ -349,10 +349,11 @@ void ConfigParser::parse_error_pages(std::string& line, std::string _2ndfield, s
 }
 
 
-ServerConfig& ConfigParser::getServerConfig(std::string& ip, int port, std::string& host){
+ServerConfig& ConfigParser::getServerConfig(std::string& ip, int port,const  std::string& host){
     std::vector<ServerConfig*> tmp;
 
-    for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); it++){                
+    for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); it++)
+    {
         if (ip == it->ip && port == it->port){
             if (std::find(it->server_names.begin(), it->server_names.end(), host) != it->server_names.end())
                 return *it;

@@ -34,7 +34,7 @@ class ConfigParser{
     public:
         ConfigParser(std::string config_file);
         ConfigParser(){};
-        ServerConfig& getServerConfig(std::string& ip, int port, std::string& host);
+        ServerConfig& getServerConfig(std::string& ip, int port, const std::string& host);
         std::vector<ServerConfig> servers;
 };
 
