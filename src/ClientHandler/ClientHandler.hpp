@@ -69,6 +69,7 @@ class ClientHandler : public RequestParser {
 		ServerConfig serverConfig;
 		ClusterConfig clusterConfig;
 		std::time_t lastReceive;
+		std::time_t firstReceive;
 
 	private:
 		void sendToSocket();

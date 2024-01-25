@@ -15,6 +15,7 @@ ClientHandler::ClientHandler(int clientFd, int epollFd ,const ServerConfig &serv
 	this->headersSent = 0;
 	this->offset = 0;
 	this->lastReceive = 0;
+	this->firstReceive = std::time(0);
 	this->chunkSize = 0;
 	this->in = false;
 	this->state = startBound;
@@ -77,6 +78,14 @@ void ClientHandler::readyToSend() {
 	// Client ready to send data
 	try
 	{
+		if (!headersLoaded)
+		{
+			if (std::time(0) - firstReceive > 5)
+			{
+				headersLoaded = 1;
+				throw HttpError(RequestTimeOut,"Request Time Out 1");
+			}
+		}
 		if (status == Sending)
 		{
 			if (monitorCGI)
