@@ -43,7 +43,7 @@ void ClientHandler::readyToReceive() {
 		if (headersLoaded)
 		{
 			if (message.headers.find("Host") != message.headers.end()){
-				serverConfig = clusterConfig.getServerConfig(serverConfig.ip, serverConfig.port, message.headers["Host"]);;
+				serverConfig = clusterConfig.getServerConfig(serverConfig.ip, serverConfig.port, message.headers["Host"].substr(0, message.headers["Host"].find(":")));
 				RequestParser::serverConfig = serverConfig;
 			}
 			else
@@ -137,6 +137,5 @@ void ClientHandler::sendToSocket()
 		}
 		totalBytesSent += sendBytes;
 	}
-	std::cout << totalBytesSent << std::endl;
 	this->sendingBuffer.erase(0, totalBytesSent);
 }
