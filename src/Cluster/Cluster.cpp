@@ -53,7 +53,8 @@ void Cluster::addSocketToEpoll(int fd) {
 
 Server& Cluster::getServerByClientFd(int fd)
 {
-	for (size_t i = 0; i < servers.size(); i++) {
+	for (size_t i = 0; i < servers.size(); i++)
+	{
 		if (servers[i]->connectedClients.find(fd) != servers[i]->connectedClients.end())
 			return *servers[i];
 	}
@@ -135,6 +136,7 @@ void Cluster::handleExistingConnection(int eventFd, uint32_t eventsData) {
 		close(client.clientFd);
 		if (client.monitorCGI)
 			kill(client.CGIpid, SIGKILL);
+		getServerByClientFd(eventFd).connectedClients.erase(eventFd);
 		clientsZone.erase(it);
 	}
 }
