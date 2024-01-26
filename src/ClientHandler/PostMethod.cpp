@@ -52,21 +52,12 @@ void ClientHandler::MutiplePartHandler()
 {
     size_t pos;
 
-    // if (!isCGIfile && !isDir)
-    //     throw HttpError(Forbidden, "Forbidden");
     if (state == startBound)
     {
-        // std::cout << "->startBound: |" << replaceNewlineWithLiteral(this->readingBuffer.toStr()) << "|" <<  std::endl;
-        // std::cout << boundary << std::endl;
-        // std::cout << replaceNewlineWithLiteral(this->readingBuffer.toStr()) << " size: " << this->readingBuffer.size()<< std::endl;
+
         if (this->readingBuffer.size() < boundary.size() + 4)
             return;
-        // std::string suff = "";
-        // if (firstboundary)
-        // {
-        //     suff = "--";
-        //     firstboundary = false;
-        // }
+
         if (this->readingBuffer.substr(0, boundary.size() + 2).toStr() !=  boundary + "\r\n")
             throw HttpError(BadRequest, "Bad Request");
         else
@@ -78,8 +69,6 @@ void ClientHandler::MutiplePartHandler()
     }
     if (state == ContentDisposition)
     {
-        // this->location.path
-        // std::cout << "->ContentDisposition: |" << replaceNewlineWithLiteral(this->readingBuffer.toStr()) << "|" << std::endl;
         std::string gigaStr;
         pos = this->readingBuffer.find("\r\n\r\n");
         // std::cout << "hello: " << this->readingBuffer.substr(pos, readingBuffer.size()).toStr() << std::endl;
@@ -100,8 +89,7 @@ void ClientHandler::MutiplePartHandler()
     }
     if (state == FileContent)
     {
-        // std::cout << "Boundary: |" << boundary << "|" << std::endl;
-        // std::cout << "->FileContent: |" << replaceNewlineWithLiteral(this->readingBuffer.toStr()) << "|" << std::endl;
+      
         pos = this->readingBuffer.find("\r\n" + boundary);
         if (pos != std::string::npos)
         {
@@ -112,9 +100,7 @@ void ClientHandler::MutiplePartHandler()
             state = EndBound;
         }
         else
-        {//----------------------------005948816781938767311044
-         //--------------------------005948816781938767311044
-            // std::cout << "here 2\n";
+        {
             size_t length = this->readingBuffer.size();
             if (length > ("\r\n" + boundary).size() + 64 * BUFFER_SIZE)
             {
@@ -126,7 +112,7 @@ void ClientHandler::MutiplePartHandler()
     }
     if (state == EndBound)
     {
-        // std::cout << "->EndBound: |" << replaceNewlineWithLiteral(this->readingBuffer.toStr()) << "|" << std::endl;
+       
         if (this->readingBuffer.size() < boundary.size() + 4)
             return;
         if (this->readingBuffer.substr(0, boundary.size() + 4).toStr() == boundary + "--\r\n")
@@ -137,7 +123,7 @@ void ClientHandler::MutiplePartHandler()
                 throw HttpError(BadRequest, "Bad Request");
             this->tmpFiles.push_back(generateUniqueFileName());
             writeToFile(postHtmlResponseGenerator(tmpFiles), this->tmpFiles[this->tmpFiles.size() - 1]);
-            setResponseParams("201", "OK", "Content-type: text/html\r\n", this->tmpFiles[this->tmpFiles.size() - 1]);
+            setResponseParams("201", "Created", "Content-type: text/html\r\n", this->tmpFiles[this->tmpFiles.size() - 1]);
             // firstboundary = 1;
             tmpFiles.erase(tmpFiles.begin(), tmpFiles.end() - 1);
         }
@@ -163,12 +149,6 @@ void ClientHandler::ChunkedHandler()
             this->tmpFiles.push_back(generateUniqueFileName(RequestParser::upload_path, getExtensionPost(message.headers["Content-Type"])));
         else
             this->tmpFiles.push_back(generateUniqueFileName(RequestParser::upload_path, ".tmp"));
-        // else if (!isCGIfile)
-        //     throw HttpError(Forbidden, "Forbidden");
-        // else
-        //     // handle cgi
-        //     // isCGIfile = isCGIfile;
-        //     std::cout << "handle cgi for post!" << std::endl;
     }
     if (!chunkSize)
     {
@@ -191,7 +171,7 @@ void ClientHandler::ChunkedHandler()
                     }
                     this->tmpFiles.push_back(generateUniqueFileName());
                     writeToFile(postHtmlResponseGenerator(tmpFiles), this->tmpFiles[this->tmpFiles.size() - 1]);
-                    setResponseParams("201", "OK", "Content-type: text/html\r\n", this->tmpFiles[this->tmpFiles.size() - 1]);
+                    setResponseParams("201", "Created", "Content-type: text/html\r\n", this->tmpFiles[this->tmpFiles.size() - 1]);
                     tmpFiles.erase(tmpFiles.begin(), tmpFiles.end() - 1);
                     // std::cout << "end chunked" << std::endl;
                 }
@@ -236,13 +216,7 @@ void ClientHandler::RegularDataHandler()
             this->tmpFiles.push_back(generateUniqueFileName(RequestParser::upload_path, getExtensionPost(message.headers["Content-Type"])));
         else
             this->tmpFiles.push_back(generateUniqueFileName(RequestParser::upload_path, ".tmp"));
-        // }
-        // else if (!isCGI)
-        //     throw HttpError(Forbidden, "Forbidden");
-        // else
-        //     // handle cgi
-        //     // isCGI = isCGI;
-        //     std::cout << "handle cgi for post!" << std::endl;
+
     }
     // std::cout << "wtf 3" << std::endl;
 
@@ -265,9 +239,8 @@ void ClientHandler::RegularDataHandler()
             }
             this->tmpFiles.push_back(generateUniqueFileName());
             writeToFile(postHtmlResponseGenerator(tmpFiles), this->tmpFiles[this->tmpFiles.size() - 1]);
-            setResponseParams("201", "OK", "Content-type: text/html\r\n", this->tmpFiles[this->tmpFiles.size() - 1]);
-            // std::cout << this->tmpFiles[this->tmpFiles.size() - 1] << std::endl;
-            // sleep(50);
+            setResponseParams("201", "Created", "Content-type: text/html\r\n", this->tmpFiles[this->tmpFiles.size() - 1]);
+
             tmpFiles.erase(tmpFiles.begin(), tmpFiles.end() - 1);
         }
 }
@@ -289,9 +262,7 @@ void ClientHandler::PostMethod()
     }
     else if (message.headers.find("Content-Type") != message.headers.end() && checkMultipart(message.headers["Content-Type"], boundary) && !isCGIfile)
     {
-        // std::cout << boundary << std::endl;
-        // std::cout << replaceNewlineWithLiteral(this->readingBuffer.toStr()) << std::endl;
-        // readingBuffer.erase(0, readingBuffer.size());
+
         MutiplePartHandler();
     }
     else
@@ -299,15 +270,5 @@ void ClientHandler::PostMethod()
         // throw HttpError(BadRequest, "Bad Request");
         RegularDataHandler();
     }
-    // else
-    // {
-    //     if (message.headers.find("Content-Type") != message.headers.end())
-    //     {
-    //         // store it by mime type or .tmp
-    //     }
-    //     else
-    //     {
-    //         // read and ignore
-    //     }
-    // }
+
 }
