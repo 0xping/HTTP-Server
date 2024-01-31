@@ -21,7 +21,7 @@ Cluster::Cluster(const ClusterConfig &configs)
 
 
 void Cluster::createEpoll() {
-	epollFd = epoll_create(64);
+	epollFd = epoll_create(1024);
 	if (epollFd == -1) {
 		std::cerr << "Error creating epoll instance\n";
 		cleanup();
@@ -51,24 +51,10 @@ void Cluster::addSocketToEpoll(int fd) {
 	}
 }
 
-
-int Cluster::setNonBlocking(int fd) {
-	int flags = fcntl(fd, F_GETFL, 0);
-	if (flags == -1) {
-		std::cerr << "Error setting socket to None-Blocking mode\n";
-		return -1;
-	}
-	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-		std::cerr << "Error setting socket to None-Blocking mode\n";
-		return -1;
-	}
-	return 0;
-}
-
-
 Server& Cluster::getServerByClientFd(int fd)
 {
-	for (size_t i = 0; i < servers.size(); i++) {
+	for (size_t i = 0; i < servers.size(); i++)
+	{
 		if (servers[i]->connectedClients.find(fd) != servers[i]->connectedClients.end())
 			return *servers[i];
 	}
@@ -99,13 +85,13 @@ bool Cluster::isServerFd(int fd)
 }
 
 void Cluster::eventLoop() {
-	const int maxEvents = 64;
+	const int maxEvents = 1024;
 	struct epoll_event events[maxEvents];
 
 	while (true )
 	{
 		int numEvents = epoll_wait(epollFd, events, maxEvents, -1);
-		if (numEvents == -1)// && errno != EINTR)
+		if (numEvents == -1)
 		{
 			std::cerr << "Error in epoll_wait: " << strerror(errno) << "\n";
 			break;
@@ -140,7 +126,7 @@ void Cluster::handleExistingConnection(int eventFd, uint32_t eventsData) {
 		client.readyToReceive();
 		client.lastReceive = std::time(0);
 	}
-	else if (eventsData & EPOLLOUT)// && client.status == Sending)
+	else if (eventsData & EPOLLOUT)
 		client.readyToSend();
 
 	if (client.status == Closed || eventsData & EPOLLHUP || eventsData & EPOLLERR)
@@ -148,25 +134,20 @@ void Cluster::handleExistingConnection(int eventFd, uint32_t eventsData) {
 		std::cout << "connection Closed Remove client from the Map" << std::endl;
 		epoll_ctl(epollFd, EPOLL_CTL_DEL, client.clientFd, NULL);
 		close(client.clientFd);
+		if (client.monitorCGI)
+			kill(client.CGIpid, SIGKILL);
+		getServerByClientFd(eventFd).connectedClients.erase(eventFd);
 		clientsZone.erase(it);
 	}
 }
 
 void Cluster::acceptConnections(int serverSocket) {
-	sockaddr_in clientAddr;
-	socklen_t clientAddrLen = sizeof(clientAddr);
-	int clientSocket = accept(serverSocket, reinterpret_cast<struct sockaddr*>(&clientAddr), &clientAddrLen);
+	int clientSocket = accept(serverSocket, 0, 0);
 	if (clientSocket == -1) {
 		std::cerr << "Error accepting connection: " << strerror(errno) << "\n";
 		return;
 	}
 	std::cout << "Server: Accepted new connection\n";
-
-	if (setNonBlocking(clientSocket) == -1) {
-		std::cerr << "Error setting non-blocking flag on client socket\n";
-		close(clientSocket);
-		return;
-	}
 
 	addSocketToEpoll(clientSocket);
 	getServerByFd(serverSocket).connectedClients.insert(clientSocket);

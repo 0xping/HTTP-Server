@@ -30,10 +30,11 @@ class ConfigParser{
     void parse_body_size(std::string& str, std::string& line, ServerConfig& server);
     void check_server(ServerConfig& server);
     void check_location(Location& location, ServerConfig& server);
+    void parse_server_name(std::string field, std::string line, std::vector<std::string>& server_names);
     public:
         ConfigParser(std::string config_file);
         ConfigParser(){};
-        ServerConfig& getServerConfig(std::string& ip, int port, std::string& host);
+        ServerConfig& getServerConfig(std::string& ip, int port, const std::string& host);
         std::vector<ServerConfig> servers;
 };
 

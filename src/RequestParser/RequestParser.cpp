@@ -5,7 +5,8 @@ RequestParser::RequestParser()
 	this->headersLoaded = false;
 	this->isCGIfile = false;
 	this->contentLength = 0;
-	this->upload_path = "./root/UPLOADS";
+	
+	
 }
 
 
@@ -62,12 +63,12 @@ void RequestParser::checkRequestLine(std::string& requestLine)
 		message.uri.fullUri = urlDecode(message.uri.unparsedURI);
 		words = strSplit(httpVersion, "/", 0);
 		if (words.size() != 2 || words[0] != "HTTP")
-			throw HttpError(BadRequest, "Bad Request check the line request");
+			throw HttpError(BadRequest, "Bad Request");
 		if (words[1] != "1.1")
 			throw HttpError(HTTPVersionNotSupported ,"505 HTTP Version Not Supported");
 	}
 	else
-		throw HttpError(BadRequest, "Bad Request request line 1");
+		throw HttpError(BadRequest, "Bad Request");
 }
 
 
@@ -96,16 +97,26 @@ void RequestParser::parseRequest()
 				throw HttpError(NotImplemented, "Not Implemented");
 		}
 		else if (contentLength == message.headers.end())
-			throw HttpError(BadRequest, "Bad Request no contentLength header exist");
+			throw HttpError(LengthRequired, "Length Required");
 		else if (!isValidBase(contentLength->second, this->contentLength, 10))
-			throw HttpError(BadRequest, "Bad Request invalid base");
+			throw HttpError(BadRequest, "Bad Request");
 	}
+	// else
+	// {
+	// 	if (contentLength == message.headers.end())
+	// 		throw HttpError(LengthRequired, "Length Required");
+	// 	if (!isValidBase(contentLength->second, this->contentLength, 10))
+	// 		throw HttpError(BadRequest, "Bad Request");
+	// 	else if (this->contentLength > this->serverConfig.max_body_size)
+	// 		throw HttpError(PayloadTooLarge, "Payload Too Large");
+	// }
 	if (!allCharactersAllowed(message.uri.unparsedURI, URI_ALLOWED_CHARS))
-		throw HttpError(BadRequest, "Bad Request uri contains none allowed chars " + message.uri.unparsedURI);
+		throw HttpError(BadRequest, "Bad Request");
 
 	if (message.uri.unparsedURI.size() > 2048)
 		throw HttpError(RequestURIToLong, "Request-URI Too Long");
-
+		
+	
 	//413 error
 }
 
@@ -120,6 +131,10 @@ bool RequestParser::parseUri(const std::string& uriStr) {
 		query = uriStr.substr(queryPos + 1);
 	}
 	location = serverConfig.getLocation(message.uri.path);
+	if (this->location.upload_path.empty())
+		this->upload_path = "./www/UPLOADS";
+	else
+		this->upload_path = this->location.upload_path;
 	fullLocation = location.root + message.uri.path;
 	if (!location._return.empty())
 		return 1;

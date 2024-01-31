@@ -15,10 +15,10 @@ ClientHandler::ClientHandler(int clientFd, int epollFd ,const ServerConfig &serv
 	this->headersSent = 0;
 	this->offset = 0;
 	this->lastReceive = 0;
+	this->firstReceive = std::time(0);
 	this->chunkSize = 0;
 	this->in = false;
 	this->state = startBound;
-	this->firstboundary = true;
 	// cgi
 	this->isCGI = 0;
 	this->monitorCGI = 0;
@@ -44,11 +44,11 @@ void ClientHandler::readyToReceive() {
 		if (headersLoaded)
 		{
 			if (message.headers.find("Host") != message.headers.end()){
-				serverConfig = clusterConfig.getServerConfig(serverConfig.ip, serverConfig.port, message.headers["Host"]);;
+				serverConfig = clusterConfig.getServerConfig(serverConfig.ip, serverConfig.port, message.headers["Host"].substr(0, message.headers["Host"].find(":")));
 				RequestParser::serverConfig = serverConfig;
 			}
 			else
-				throw HttpError(BadRequest, "Bad Request check the Host header");
+				throw HttpError(BadRequest, "Bad Request");
 			parseRequest();
 			if (!location._return.empty())
 				redirect();
@@ -78,6 +78,14 @@ void ClientHandler::readyToSend() {
 	// Client ready to send data
 	try
 	{
+		if (!headersLoaded)
+		{
+			if (std::time(0) - firstReceive > 5)
+			{
+				headersLoaded = 1;
+				throw HttpError(RequestTimeOut,"Request Time Out 1");
+			}
+		}
 		if (status == Sending)
 		{
 			if (monitorCGI)
@@ -115,17 +123,8 @@ void ClientHandler::readFromSocket(int bufferSize) {
 	ssize_t bytesRead = recv(this->clientFd, buffer, bufferSize - 1, 0);
 
 	if (bytesRead <= 0) {
-		if (bytesRead == 0)
-		{
-			std::cout << "Connection closed by client\n";
-			status = Closed;
-		}
-		if (bytesRead == -1)
-		{
-			status = Sending;
-			std::cerr << "Error receiving data: " << strerror(errno) << "\n";
-			throw HttpError(InternalServerError, "Internal Server Error");
-		}
+		status = Closed;
+		std::cout << "Connection closed by client\n";
 		return ;
 	}
 	this->readingBuffer.append(buffer, bytesRead);

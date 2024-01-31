@@ -1,18 +1,18 @@
 server:
-  listen: 127.0.0.1:8080
-  max_client_body_size: 21448473648
-  server_name: example1.com
+  listen: 127.0.0.2:8080
+  max_client_body_size: 21021654564
+  server_names: example1.com
   error_page:
     - 302: error_pages/302.html
     - 400: error_pages/400.html
-
+      
   location:
     /root:
       allow_methods:
         - GET
         - POST
       autoindex: on
-      root: ./root
+      root: ./www
       cgi_path:
         - php: /usr/bin/php
         - py: /usr/bin/python3
@@ -23,25 +23,31 @@ server:
         - GET
         - DELETE
         - POST
-      root: ./root
+      root: ./www
       autoindex: on
+      index:
+        - test/cgi.py
       cgi_path:
-        - php: /usr/bin/php
+        - php: /usr/bin/cgiphp
         - py: /usr/bin/python3
         - rb: /usr/bin/ruby
 
     /test:
-      root: ./root
+      root: ./www
       autoindex: on
       cgi_path:
         - php: /usr/bin/php
         - py: /usr/bin/python3
         - rb: /usr/bin/ruby
+      allow_methods:
+        - GET
+        - DELETE
+        - POST
 
 
 server:
   listen: 127.0.0.1:8080
-  server_name: example2.com
+  server_names: example2.com
   error_page:
     - 302: error_pages/302.html
     - 400: error_pages/400.html
@@ -51,7 +57,7 @@ server:
       allow_methods:
         - GET
         - POST
-      root: ./root
+      root: ./www
       autoindex: on
       index:
         - test
@@ -59,30 +65,30 @@ server:
       cgi_path:
         - php: /usr/bin/php
         - py: /usr/bin/python3
+      upload_path: www/test
 
     /:
       allow_methods:
         - GET
         - DELETE
         - POST
-      root: ./root
+      root: ./www
       index:
         - nigga
-        - small.mp4
       autoindex: on
       cgi_path:
         - php: /usr/bin/php
         - py: /usr/bin/python3
 
     /test:
-      root: ./root
+      root: ./www
       autoindex: on
       return: http://www.google.com
 
 
 server:
-  listen: 127.0.0.1:8081
-  server_name: www.examp.com
+  listen: 127.0.0.3:8081
+  server_names: www.examp.com
   error_page:
     - 302: error_pages/302.html
     - 400: error_pages/400.html
@@ -92,7 +98,7 @@ server:
       allow_methods:
         - GET
         - POST
-      root: ./root
+      root: ./www
       autoindex: on
       index:
         - test
@@ -106,13 +112,13 @@ server:
         - GET
         - DELETE
         - POST
-      root: ./root
+      root: ./www
       index:
         - nigga
         - small.mp4
       autoindex: on
 
     /test:
-      root: ./root
+      root: ./www
       autoindex: on
       return: http://www.google.com

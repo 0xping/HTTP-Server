@@ -15,7 +15,9 @@ enum ErrorCode {
 	Forbidden = 403,
 	RequestTimeOut = 408,
 	Conflict = 409,
-	HTTPVersionNotSupported = 505
+	HTTPVersionNotSupported = 505,
+	PayloadTooLarge = 413,
+	LengthRequired = 411
 	// Add more errors
 };
 

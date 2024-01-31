@@ -28,6 +28,8 @@ size_t Binary::find(const std::string& pattern) const {
 
 Binary Binary::substr(size_t start, std::string::size_type length) const {
 	length = std::min(length, data.size() - start);
+	if (start > data.size())
+		return Binary();
 	return Binary(&data[start], length);
 }
 
@@ -62,7 +64,7 @@ size_t Binary::size() {return data.size();}
 
 
 // int main(int argc, char const *argv[])
-// {	
+// {
 // 	const unsigned char s[11] = "0123456789";
 // 	const unsigned char *str = s;
 // 	Binary b(str, 10);

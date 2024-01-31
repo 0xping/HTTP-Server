@@ -5,7 +5,13 @@ void ClientHandler::SendResponse(){
 	if (!headersSent){
 		if (file.empty())
 			file = serverConfig.getErrorPage(statusCode);
-
+		if (access(file.c_str(), R_OK)){
+			if (statusCode == "500"){
+				sendServerError();
+				return ;
+			}
+			throw HttpError(InternalServerError, "Internal Server Error");
+		}
 		std::string re;
 
 		re = generateHeaders();
@@ -19,8 +25,11 @@ void ClientHandler::SendResponse(){
 		//protect
 		// std::cout << "response: " << file.c_str() << std::endl;
 		std::ifstream fileToSend(file.c_str(), std::ios::binary);
-		if (!fileToSend.is_open())
-			throw HttpError(InternalServerError, "Internal Server Error");
+		if (!fileToSend.is_open()){
+			status = Closed;
+			return ;
+		}
+			
 		char buffer[BUFFER_SIZE + 1] =  {0};
 
 		fileToSend.seekg(offset);
@@ -34,10 +43,7 @@ void ClientHandler::SendResponse(){
 
 		/// set status to Closed if done sending
 		if (fileToSend.eof())
-		{
-			headersSent = 0;
 			status = Closed;
-		}
 		fileToSend.close();
 	}
 }
@@ -150,4 +156,64 @@ void ClientHandler::setResponseParams(std::string statusCode, std::string status
 	this->statusString = statusString;
 	this->isCGI = isCGI;
 	status = Sending;
+}
+
+
+void ClientHandler::sendServerError(){ 
+    // Content to be sent in the HTTP response body
+    const char* response =
+		"HTTP/1.1 500 Internal Server Error\r\n"
+		"Content-Type: text/html\r\n"
+		"Content-Length: 1158\r\n\r\n"
+        "<!DOCTYPE html>\n"
+        "<html lang=\"en\">\n"
+        "<head>\n"
+        "\t<meta charset=\"UTF-8\">\n"
+        "\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+        "\t<title>500 Internal Server Error</title>\n"
+        "\t<style>\n"
+        "\t\tbody {\n"
+        "\t\t  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n"
+        "\t\t  background-color: #222222; /* Deeper, more elegant dark background */\n"
+        "\t\t  color: #f0f0f0; /* Slightly brighter text for better readability */\n"
+        "\t\t  text-align: center;\n"
+        "\t\t  padding: 50px;\n"
+        "\t\t  margin: 0;\n"
+        "\t\t}\n"
+        "\n"
+        "\t\th1 {\n"
+        "\t\t  color: #e74c3c;\n"
+        "\t\t  text-shadow: 2px 2px 4px #333;\n"
+        "\t\t  font-size: 3em; /* Larger heading for greater impact */\n"
+        "\t\t}\n"
+        "\n"
+        "\t\tp {\n"
+        "\t\t  font-size: 1.2em; /* Slightly larger text for easier reading */\n"
+        "\t\t  color: #a8a8a8;\n"
+        "\t\t  margin-bottom: 20px;\n"
+        "\t\t  text-shadow: 1px 1px 2px #333;\n"
+        "\t\t}\n"
+        "\n"
+        "\t\ta {\n"
+        "\t\t  color: #3498db;\n"
+        "\t\t  text-decoration: none;\n"
+        "\t\t  transition: color 0.3s;\n"
+        "\t\t}\n"
+        "\n"
+        "\t\ta:hover {\n"
+        "\t\t  color: #2980b9;\n"
+        "\t\t  text-decoration: underline;\n"
+        "\t\t}\n"
+        "\t  </style>\n"
+        "</head>\n"
+        "<body>\n"
+        "\t<h1>500 - Internal Server Error</h1>\n"
+        "\t<p>Oops! Something went wrong on our server.</p>\n"
+        "\t<p>Please try again later or contact <a href=\"https://profile.intra.42.fr/users/aait-lfd\" style=\"color: #3498db;\">support</a>.</p>\n"
+        "</body>\n"
+        "</html>";
+
+	sendingBuffer.append((const unsigned char *)response,std::strlen(response));
+	sendToSocket();
+	status = Closed;
 }

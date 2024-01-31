@@ -69,6 +69,7 @@ class ClientHandler : public RequestParser {
 		ServerConfig serverConfig;
 		ClusterConfig clusterConfig;
 		std::time_t lastReceive;
+		std::time_t firstReceive;
 
 	private:
 		void sendToSocket();
@@ -80,7 +81,6 @@ class ClientHandler : public RequestParser {
 		bool in;
 		std::string boundary;
 		MultiPartState state;
-		bool firstboundary;
 
 	public :
 		ClientHandler(int clientFd, int epollFd ,const  ServerConfig &serverConfig, const ClusterConfig &config);
@@ -100,7 +100,7 @@ class ClientHandler : public RequestParser {
 		bool headersSent;
 
 		void setResponseParams(std::string statusCode, std::string statusString, std::string extraHeaders, std::string file, bool isCGI=false);
-
+		void sendServerError();
 		void SendResponse();
 		std::string generateHeaders();
 		std::string getExtension();
