@@ -61,7 +61,7 @@ server:
       autoindex: on
       index:
         - test
-        - nigga
+        - index.html
       cgi_path:
         - php: /usr/bin/php
         - py: /usr/bin/python3
@@ -74,7 +74,7 @@ server:
         - POST
       root: ./www
       index:
-        - nigga
+        - index.html
       autoindex: on
       cgi_path:
         - php: /usr/bin/php
@@ -102,7 +102,7 @@ server:
       autoindex: on
       index:
         - test
-        - nigga
+        - index.html
       cgi_path:
         - php: /usr/bin/php
         - py: /usr/bin/python3
@@ -114,7 +114,7 @@ server:
         - POST
       root: ./www
       index:
-        - nigga
+        - index.html
         - small.mp4
       autoindex: on
 
